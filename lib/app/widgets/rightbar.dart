@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kelvin_project/app/globals/constant.dart';
+import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
 import 'package:unicons/unicons.dart';
 
 class Rightbar extends StatelessWidget {
@@ -12,19 +13,21 @@ class Rightbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       controller: ScrollController(),
-      children: const [
+      children: [
         User(),
-        DayTime(),
-        LastTransaction(),
+        const DayTime(),
+        const LastTransaction(),
       ],
     );
   }
 }
 
 class User extends StatelessWidget {
-  const User({
+  User({
     Key? key,
   }) : super(key: key);
+
+  final controller = Get.find<HomeController>();
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +81,7 @@ class User extends StatelessWidget {
                 cancelTextColor: primaryColor,
                 onConfirm: () {
                   Get.back();
+                  controller.logout();
                 },
                 onCancel: () => Get.back(),
               );

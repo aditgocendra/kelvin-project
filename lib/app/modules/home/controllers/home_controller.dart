@@ -1,6 +1,9 @@
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
+  // Logged in
+  final isLogin = false.obs;
+
   // Sidebar Content
   final indexContent = 0.obs;
 
@@ -22,5 +25,9 @@ class HomeController extends GetxController {
     }
     countProductTransactionForm.value--;
     listProductVariantTransactionForm.removeAt(index);
+  }
+
+  void logout() {
+    isLogin.toggle();
   }
 }

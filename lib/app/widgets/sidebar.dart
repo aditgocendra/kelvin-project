@@ -85,6 +85,7 @@ class NavItemSidebar extends StatelessWidget {
                     cancelTextColor: primaryColor,
                     onConfirm: () {
                       Get.back();
+                      controller.logout();
                     },
                     onCancel: () => Get.back(),
                   );
