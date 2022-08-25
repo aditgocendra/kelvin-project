@@ -17,8 +17,6 @@ jobs:
         with:
           channel: "dev"
 
-      # Build Website
-      - name: Build Website
       - run: flutter build web --web-renderer html --release
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
