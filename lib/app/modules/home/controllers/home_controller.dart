@@ -11,6 +11,7 @@ class HomeController extends GetxController {
   final countVariantForm = 1.obs;
 
   // Transaction Screen
+
   final countProductTransactionForm = 0.obs;
   List<dynamic> listProductVariantTransactionForm = [1.obs];
 

@@ -14,6 +14,7 @@ dependencies:
   get: 4.6.5
   flutter:
     sdk: flutter
+  pdf: ^3.8.3
 
 dev_dependencies:
   flutter_lints: ^2.0.0
@@ -26,3 +27,10 @@ flutter:
   assets:
     - assets/images/logo/
     - assets/images/avatar/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Bold.ttf
+        - asset: assets/fonts/Poppins-Italic.ttf

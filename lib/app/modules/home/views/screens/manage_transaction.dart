@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/globals/styles.dart';
 import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
+import 'package:kelvin_project/services/local/pdf_services.dart';
 import 'package:unicons/unicons.dart';
 
 class ManageTransaction extends StatelessWidget {
@@ -20,7 +21,7 @@ class ManageTransaction extends StatelessWidget {
             horizontal: 16,
             vertical: 12,
           ),
-          child: screenSize > 580
+          child: screenSize > 780
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -32,12 +33,106 @@ class ManageTransaction extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    Row(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            PdfService.buildPdf(false);
+                          },
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: primaryColor,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(12),
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              children: const [
+                                Icon(
+                                  UniconsLine.document_info,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text(
+                                  'Buat Laporan',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        InkWell(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => DialogFormTransaction(),
+                            );
+                          },
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: primaryColor,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(12),
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              children: const [
+                                Icon(
+                                  UniconsLine.plus_circle,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text(
+                                  'Tambah Transaksi',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Pengelolaan Transaksi',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 12,
+                    ),
                     InkWell(
                       onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => DialogFormTransaction(),
-                        );
+                        PdfService.buildPdf(false);
                       },
                       child: Container(
                         decoration: const BoxDecoration(
@@ -53,7 +148,7 @@ class ManageTransaction extends StatelessWidget {
                         child: Row(
                           children: const [
                             Icon(
-                              UniconsLine.plus_circle,
+                              UniconsLine.document_info,
                               color: Colors.white,
                               size: 20,
                             ),
@@ -61,7 +156,7 @@ class ManageTransaction extends StatelessWidget {
                               width: 8,
                             ),
                             Text(
-                              'Tambah Transaksi',
+                              'Buat Laporan',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -69,18 +164,6 @@ class ManageTransaction extends StatelessWidget {
                             ),
                           ],
                         ),
-                      ),
-                    )
-                  ],
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Pengelolaan Transaksi',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(
@@ -335,7 +418,7 @@ class DialogDetailTransaction extends StatelessWidget {
                 ),
                 child: const ListTile(
                   title: Text(
-                    'Invoice : TR-KL-2022-08-12-B023SJHFD',
+                    'Kode Transaksi : TR-KL-2022-08-12-B023SJHFD',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -650,7 +733,7 @@ class TransactionTable extends StatelessWidget {
                   DataColumn(
                     label: Expanded(
                       child: Center(
-                        child: Text('Invoice'),
+                        child: Text('Kode Transaksi'),
                       ),
                     ),
                   ),

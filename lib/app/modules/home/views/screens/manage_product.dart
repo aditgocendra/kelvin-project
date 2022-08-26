@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/globals/styles.dart';
 import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
+import 'package:kelvin_project/services/local/pdf_services.dart';
 import 'package:unicons/unicons.dart';
 
 class ManageProduct extends StatelessWidget {
@@ -22,7 +23,7 @@ class ManageProduct extends StatelessWidget {
             horizontal: 16,
             vertical: 12,
           ),
-          child: screenSize > 550
+          child: screenSize > 700
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -34,14 +35,109 @@ class ManageProduct extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    Row(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            PdfService.buildPdf(true);
+                          },
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: primaryColor,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(12),
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              children: const [
+                                Icon(
+                                  UniconsLine.document_info,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text(
+                                  'Cetak Laporan',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 12,
+                        ),
+                        InkWell(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => DialogFormProduct(
+                                titleForm: 'Tambah Produk',
+                              ),
+                            );
+                          },
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: primaryColor,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(12),
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              children: const [
+                                Icon(
+                                  UniconsLine.plus_circle,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text(
+                                  'Tambah Produk',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Pengelolaan Produk',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 12,
+                    ),
                     InkWell(
                       onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => DialogFormProduct(
-                            titleForm: 'Tambah Produk',
-                          ),
-                        );
+                        PdfService.buildPdf(true);
                       },
                       child: Container(
                         decoration: const BoxDecoration(
@@ -65,7 +161,7 @@ class ManageProduct extends StatelessWidget {
                               width: 8,
                             ),
                             Text(
-                              'Tambah Produk',
+                              'Cetak Laporan',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -73,19 +169,6 @@ class ManageProduct extends StatelessWidget {
                             )
                           ],
                         ),
-                      ),
-                    )
-                  ],
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Pengelolaan Produk',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(
@@ -143,7 +226,7 @@ class ManageProduct extends StatelessWidget {
 
 class DialogFormProduct extends StatelessWidget {
   final controller = Get.find<HomeController>();
-  final titleForm;
+  String titleForm;
 
   DialogFormProduct({Key? key, required this.titleForm}) : super(key: key);
 
