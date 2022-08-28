@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:unicons/unicons.dart';
 
-const primaryColor = Color.fromARGB(255, 244, 51, 238);
-const secondaryColor = Color.fromARGB(255, 238, 103, 233);
+const primaryColor = Color.fromARGB(255, 111, 110, 90);
+const secondaryColor = Color.fromARGB(255, 171, 169, 135);
 const canvasColor = Colors.white;
 
 const List<Map<String, dynamic>> listNavItem = [
