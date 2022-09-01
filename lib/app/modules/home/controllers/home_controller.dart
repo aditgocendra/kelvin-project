@@ -31,4 +31,10 @@ class HomeController extends GetxController {
   void logout() {
     isLogin.toggle();
   }
+
+  @override
+  void onInit() {
+    print('init home');
+    super.onInit();
+  }
 }

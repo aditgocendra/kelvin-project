@@ -64,7 +64,7 @@ class AdminPanel extends StatelessWidget {
                         content = const ManageProduct();
                         break;
                       case 2:
-                        content = const ManageCategory();
+                        content = ManageCategory();
                         break;
                       case 3:
                         content = const ManageTransaction();
