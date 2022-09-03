@@ -58,7 +58,7 @@ class User extends StatelessWidget {
             height: 8,
           ),
           const Text(
-            'Aditya Gocendra',
+            'Si Paling Keren',
             style: TextStyle(
               fontSize: 12,
               color: Colors.black87,

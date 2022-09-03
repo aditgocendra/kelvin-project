@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/globals/styles.dart';
-import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
+import 'package:kelvin_project/app/modules/home/controllers/manage_category_controller.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:unicons/unicons.dart';
 
 class ManageCategory extends StatelessWidget {
-  const ManageCategory({Key? key}) : super(key: key);
+  ManageCategory({Key? key}) : super(key: key);
+  final mCtgController = Get.find<ManageCategoryController>();
 
   @override
   Widget build(BuildContext context) {
@@ -132,20 +134,29 @@ class ManageCategory extends StatelessWidget {
                   ],
                 ),
         ),
-        const CategoryTable()
+        CategoryTable()
       ],
     );
   }
 }
 
 class DialogFormCategory extends StatelessWidget {
-  final controller = Get.find<HomeController>();
-  final titleForm;
+  String titleForm;
+  String? idDocument;
+  String? name;
+  DialogFormCategory({
+    Key? key,
+    required this.titleForm,
+    this.idDocument,
+    this.name,
+  }) : super(key: key);
 
-  DialogFormCategory({Key? key, required this.titleForm}) : super(key: key);
-
+  final mCtgController = Get.find<ManageCategoryController>();
   @override
   Widget build(BuildContext context) {
+    if (name != null) {
+      mCtgController.nameTec.text = name!;
+    }
     return Dialog(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(
@@ -166,6 +177,7 @@ class DialogFormCategory extends StatelessWidget {
           padding: const EdgeInsets.all(32.0),
           child: SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -194,6 +206,7 @@ class DialogFormCategory extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: TextField(
+                    controller: mCtgController.nameTec,
                     style: const TextStyle(fontSize: 14),
                     cursorColor: primaryColor,
                     decoration:
@@ -204,7 +217,13 @@ class DialogFormCategory extends StatelessWidget {
                   height: 16,
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    if (name == null) {
+                      mCtgController.writeCategory();
+                    } else {
+                      mCtgController.updateCategory(idDocument!);
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     primary: primaryColor,
                     elevation: 0.5,
@@ -230,9 +249,10 @@ class DialogFormCategory extends StatelessWidget {
 }
 
 class CategoryTable extends StatelessWidget {
-  const CategoryTable({
+  CategoryTable({
     Key? key,
   }) : super(key: key);
+  final mCtgController = Get.find<ManageCategoryController>();
 
   @override
   Widget build(BuildContext context) {
@@ -249,143 +269,219 @@ class CategoryTable extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: const [
-                DataColumn(
-                  label: Expanded(
-                    child: Center(
-                      child: Text('Nomor'),
-                    ),
+          return GetBuilder(
+            init: mCtgController,
+            builder: (ctl) {
+              if (mCtgController.isLoading.value) {
+                return const ShimmerTableCategoryLoading();
+              }
+
+              if (mCtgController.listCategory.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('Yahhh, Belum ada satupun kategori nih :('),
                   ),
-                ),
-                DataColumn(
-                  label: Expanded(
-                    child: Center(
-                      child: Text('Nama Kategori'),
-                    ),
-                  ),
-                ),
-                DataColumn(
-                  label: Expanded(
-                    child: Center(
-                      child: Text('Aksi'),
-                    ),
-                  ),
-                )
-              ],
-              rows: [
-                DataRow(
-                  cells: [
-                    DataCell(
-                      SizedBox(
-                        width: constraints.maxWidth / 6,
-                        child: const Center(
-                          child: Text(
-                            '1',
-                          ),
+                );
+              }
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  showCheckboxColumn: true,
+                  columns: const [
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Nomor'),
                         ),
                       ),
                     ),
-                    DataCell(
-                      SizedBox(
-                        width: constraints.maxWidth / 3,
-                        child: const Center(
-                          child: Text(
-                            'Baju Atasan',
-                          ),
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Nama Kategori'),
                         ),
                       ),
                     ),
-                    DataCell(
-                      SizedBox(
-                        width: constraints.maxWidth / 2,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            InkWell(
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => DialogFormCategory(
-                                    titleForm: 'Ubah Kategori',
-                                  ),
-                                );
-                              },
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(12),
-                              ),
-                              child: Container(
-                                width: 32,
-                                height: 32,
-                                decoration: const BoxDecoration(
-                                  color: primaryColor,
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(8),
-                                  ),
-                                ),
-                                child: const Icon(
-                                  UniconsLine.edit,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            InkWell(
-                              onTap: () {
-                                Get.defaultDialog(
-                                  contentPadding: const EdgeInsets.all(32),
-                                  title: 'Hapus Kategori',
-                                  middleText:
-                                      'Apakah kamu yakin ingin menghapus kategori ini ?',
-                                  textConfirm: 'Ya',
-                                  textCancel: 'Tidak',
-                                  buttonColor: primaryColor,
-                                  confirmTextColor: Colors.white,
-                                  cancelTextColor: primaryColor,
-                                  onConfirm: () {
-                                    Get.back();
-                                  },
-                                  onCancel: () => Get.back(),
-                                );
-                              },
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(12),
-                              ),
-                              child: Container(
-                                width: 32,
-                                height: 32,
-                                decoration: const BoxDecoration(
-                                  color: primaryColor,
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(8),
-                                  ),
-                                ),
-                                child: const Icon(
-                                  UniconsLine.trash_alt,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            )
-                          ],
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Aksi'),
                         ),
                       ),
                     )
                   ],
-                )
-              ],
-            ),
+                  rows: mCtgController.listCategory
+                      .asMap()
+                      .map(
+                        (index, value) => MapEntry(
+                          index,
+                          DataRow(
+                            cells: [
+                              DataCell(
+                                SizedBox(
+                                  width: constraints.maxWidth / 6,
+                                  child: Center(
+                                    child: Text(
+                                      (index + 1).toString(),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                SizedBox(
+                                  width: constraints.maxWidth / 2,
+                                  child: Center(
+                                    child: Text(
+                                      value.name,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                SizedBox(
+                                  width: constraints.maxWidth / 4,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const SizedBox(
+                                        width: 8,
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) =>
+                                                DialogFormCategory(
+                                              titleForm: 'Ubah Kategori',
+                                              name: value.name,
+                                              idDocument: value.idDocument,
+                                            ),
+                                          );
+                                        },
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(12),
+                                        ),
+                                        child: Container(
+                                          width: 32,
+                                          height: 32,
+                                          decoration: const BoxDecoration(
+                                            color: primaryColor,
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(8),
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            UniconsLine.edit,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 8,
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          Get.defaultDialog(
+                                            contentPadding:
+                                                const EdgeInsets.all(32),
+                                            title: 'Hapus Kategori',
+                                            middleText:
+                                                'Apakah kamu yakin ingin menghapus kategori ini ?',
+                                            textConfirm: 'Ya',
+                                            textCancel: 'Tidak',
+                                            buttonColor: primaryColor,
+                                            confirmTextColor: Colors.white,
+                                            cancelTextColor: primaryColor,
+                                            onConfirm: () =>
+                                                mCtgController.deleteCategory(
+                                                    value.idDocument!),
+                                            onCancel: () => Get.back(),
+                                          );
+                                        },
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(12),
+                                        ),
+                                        child: Container(
+                                          width: 32,
+                                          height: 32,
+                                          decoration: const BoxDecoration(
+                                            color: primaryColor,
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(8),
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            UniconsLine.trash_alt,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      )
+                      .values
+                      .toList(),
+                ),
+              );
+            },
           );
         },
       ),
+    );
+  }
+}
+
+class ShimmerTableCategoryLoading extends StatelessWidget {
+  const ShimmerTableCategoryLoading({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return DataTable(
+      columns: [
+        DataColumn(
+          label: Expanded(
+            child: Center(
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey.shade600,
+                highlightColor: Colors.grey.shade200,
+                child: const Text('Nomor'),
+              ),
+            ),
+          ),
+        ),
+        DataColumn(
+          label: Expanded(
+            child: Center(
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey.shade600,
+                highlightColor: Colors.grey.shade200,
+                child: const Text('Nama Kategori'),
+              ),
+            ),
+          ),
+        ),
+        DataColumn(
+          label: Expanded(
+            child: Center(
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey.shade600,
+                highlightColor: Colors.grey.shade200,
+                child: const Text('Aksi'),
+              ),
+            ),
+          ),
+        )
+      ],
+      rows: const [],
     );
   }
 }
