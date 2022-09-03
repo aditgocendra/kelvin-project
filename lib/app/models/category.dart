@@ -22,4 +22,12 @@ class CategoryModel {
       'createdAt': createdAt,
     };
   }
+
+  String ctgAsString() {
+    return name;
+  }
+
+  bool isEqual(CategoryModel model) {
+    return idDocument == model.idDocument;
+  }
 }

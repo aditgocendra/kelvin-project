@@ -61,7 +61,7 @@ class AdminPanel extends StatelessWidget {
                     Widget content;
                     switch (controller.indexContent.value) {
                       case 1:
-                        content = const ManageProduct();
+                        content = ManageProduct();
                         break;
                       case 2:
                         content = ManageCategory();

@@ -2,14 +2,18 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/globals/styles.dart';
-import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
+import 'package:kelvin_project/app/models/category.dart';
+import 'package:kelvin_project/app/models/products.dart';
+import 'package:kelvin_project/app/modules/home/controllers/manage_product_controller.dart';
 import 'package:kelvin_project/services/local/pdf_services.dart';
 import 'package:unicons/unicons.dart';
 
 class ManageProduct extends StatelessWidget {
-  const ManageProduct({Key? key}) : super(key: key);
+  ManageProduct({Key? key}) : super(key: key);
+  final mProductController = Get.find<ManageProductController>();
 
   @override
   Widget build(BuildContext context) {
@@ -78,11 +82,28 @@ class ManageProduct extends StatelessWidget {
                         ),
                         InkWell(
                           onTap: () {
+                            if (mProductController.categoryData.isEmpty) {
+                              Get.defaultDialog(
+                                contentPadding: const EdgeInsets.all(32),
+                                title: 'Kategori Kosong',
+                                middleText:
+                                    'Yahh kamu belum bisa nambahin produk nih, Tambahin kategori dulu yaa :)',
+                                textConfirm: 'Ok',
+                                buttonColor: primaryColor,
+                                confirmTextColor: Colors.white,
+                                onConfirm: () => Get.back(),
+                              );
+                              return;
+                            }
+                            mProductController.resetEditingCtl();
                             showDialog(
                               context: context,
-                              builder: (context) => DialogFormProduct(
-                                titleForm: 'Tambah Produk',
-                              ),
+                              builder: (context) {
+                                return DialogFormProduct(
+                                  titleForm: 'Tambah Produk',
+                                  action: false,
+                                );
+                              },
                             );
                           },
                           child: Container(
@@ -176,11 +197,15 @@ class ManageProduct extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: () {
+                        mProductController.resetEditingCtl();
                         showDialog(
                           context: context,
-                          builder: (context) => DialogFormProduct(
-                            titleForm: 'Tambah Produk',
-                          ),
+                          builder: (context) {
+                            return DialogFormProduct(
+                              titleForm: 'Tambah Produk',
+                              action: false,
+                            );
+                          },
                         );
                       },
                       child: Container(
@@ -225,13 +250,47 @@ class ManageProduct extends StatelessWidget {
 }
 
 class DialogFormProduct extends StatelessWidget {
-  final controller = Get.find<HomeController>();
+  // action ? edit product : add product
+  final mProductController = Get.find<ManageProductController>();
   String titleForm;
+  bool action;
 
-  DialogFormProduct({Key? key, required this.titleForm}) : super(key: key);
+  String? codeProduct;
+  String? nameProduct;
+  int? price;
+
+  DialogFormProduct({
+    Key? key,
+    required this.titleForm,
+    required this.action,
+    this.codeProduct,
+    this.nameProduct,
+    this.price,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    if (action) {
+      mProductController.nameProductTec.text = nameProduct!;
+      mProductController.priceTec.text = price.toString();
+      mProductController.codeProductTec.text = codeProduct!;
+
+      for (var i = 0; i < mProductController.listVariantProduct.length; i++) {
+        if (i > 0) {
+          mProductController.addFormVariant();
+        }
+
+        mProductController.listVariantFormCtl[i]['colorCtl'].text =
+            mProductController.listVariantProduct[i].color;
+
+        mProductController.listVariantFormCtl[i]['stockCtl'].text =
+            mProductController.listVariantProduct[i].stock.toString();
+
+        mProductController.listVariantFormCtl[i]['sizeSelected'] =
+            mProductController.listVariantProduct[i].size;
+      }
+    }
+
     return Dialog(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(
@@ -251,6 +310,7 @@ class DialogFormProduct extends StatelessWidget {
         ),
         child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -279,6 +339,9 @@ class DialogFormProduct extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: TextField(
+                  controller: mProductController.codeProductTec,
+                  textCapitalization: TextCapitalization.characters,
+                  readOnly: action ? true : false,
                   style: const TextStyle(fontSize: 14),
                   cursorColor: primaryColor,
                   decoration: GlobalStyles.formInputDecoration('Kode Produk'),
@@ -287,6 +350,7 @@ class DialogFormProduct extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: TextField(
+                  controller: mProductController.nameProductTec,
                   style: const TextStyle(fontSize: 14),
                   cursorColor: primaryColor,
                   decoration: GlobalStyles.formInputDecoration('Nama Produk'),
@@ -295,6 +359,7 @@ class DialogFormProduct extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: TextField(
+                  controller: mProductController.priceTec,
                   style: const TextStyle(fontSize: 14),
                   cursorColor: primaryColor,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -304,44 +369,62 @@ class DialogFormProduct extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                child: DropdownSearch<String>(
-                  items: const ['Atasan', 'Bawahan'],
-                  onChanged: (String? value) {
-                    // controller.conditionSelected.value = value!;
-                  },
-                  popupProps: PopupProps.menu(
-                    showSelectedItems: true,
-                    fit: FlexFit.loose,
-                    menuProps: const MenuProps(
-                      backgroundColor: Colors.transparent,
-                      elevation: 0.5,
-                    ),
-                    containerBuilder: (ctx, popupWidget) {
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const SizedBox(
-                            height: 12,
-                          ),
-                          Flexible(
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(12.0),
+                child: GetBuilder(
+                  init: mProductController,
+                  builder: (_) {
+                    return DropdownSearch<CategoryModel>(
+                      items: mProductController.categoryData,
+                      compareFn: (i, s) => i.isEqual(s),
+                      itemAsString: (CategoryModel ctg) => ctg.ctgAsString(),
+                      onChanged: (CategoryModel? value) {
+                        mProductController.idCategorySelected =
+                            value!.idDocument;
+                      },
+                      popupProps: PopupProps.menu(
+                        showSelectedItems: true,
+                        fit: FlexFit.loose,
+                        menuProps: const MenuProps(
+                          backgroundColor: Colors.transparent,
+                          elevation: 0.5,
+                        ),
+                        containerBuilder: (ctx, popupWidget) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const SizedBox(
+                                height: 12,
+                              ),
+                              Flexible(
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(12.0),
+                                    ),
+                                  ),
+                                  child: popupWidget,
                                 ),
                               ),
-                              child: popupWidget,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  dropdownDecoratorProps: GlobalStyles.dropdownDecoration(
-                    'Kategori Produk',
-                  ),
+                            ],
+                          );
+                        },
+                      ),
+                      dropdownDecoratorProps: GlobalStyles.dropdownDecoration(
+                        'Kategori Produk',
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              Obx(
+                () => Text(
+                  mProductController.errFormMessage.value,
+                  textAlign: TextAlign.start,
+                  style: const TextStyle(color: Colors.redAccent),
                 ),
               ),
               const SizedBox(
@@ -358,7 +441,10 @@ class DialogFormProduct extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    onPressed: () => controller.countVariantForm.value++,
+                    onPressed: () {
+                      mProductController.addFormVariant();
+                      mProductController.update();
+                    },
                     icon: const Icon(
                       UniconsLine.plus_circle,
                       color: primaryColor,
@@ -370,14 +456,17 @@ class DialogFormProduct extends StatelessWidget {
                 height: 16,
               ),
               // Variant Product
-              Obx(
-                () {
+              GetBuilder(
+                init: mProductController,
+                builder: (_) {
                   return ListView.builder(
                     shrinkWrap: true,
                     primary: false,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: controller.countVariantForm.value,
-                    itemBuilder: (context, index) => FormVariantProduct(),
+                    itemCount: mProductController.listVariantFormCtl.length,
+                    itemBuilder: (context, index) => FormVariantProduct(
+                      index: index,
+                    ),
                   );
                 },
               ),
@@ -385,7 +474,23 @@ class DialogFormProduct extends StatelessWidget {
                 height: 16,
               ),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  if (!action) {
+                    // Check Code Product
+                    final codeProductIsAvailable =
+                        await mProductController.checkCodeProduct(
+                      mProductController.codeProductTec.text,
+                    );
+
+                    if (codeProductIsAvailable) {
+                      mProductController.errFormMessage.value =
+                          'Kode Produk Telah Tersedia';
+
+                      return;
+                    }
+                  }
+                  mProductController.setProduct();
+                },
                 style: ElevatedButton.styleFrom(
                   primary: primaryColor,
                   elevation: 0.5,
@@ -410,11 +515,9 @@ class DialogFormProduct extends StatelessWidget {
 }
 
 class FormVariantProduct extends StatelessWidget {
-  final controller = Get.find<HomeController>();
-
-  FormVariantProduct({
-    Key? key,
-  }) : super(key: key);
+  final mProductController = Get.find<ManageProductController>();
+  int index;
+  FormVariantProduct({Key? key, required this.index}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -432,6 +535,8 @@ class FormVariantProduct extends StatelessWidget {
       child: Column(
         children: [
           TextField(
+            controller: mProductController.listVariantFormCtl[index]
+                ['colorCtl'],
             style: const TextStyle(fontSize: 14),
             cursorColor: primaryColor,
             decoration: GlobalStyles.formInputDecoration('Warna'),
@@ -440,6 +545,8 @@ class FormVariantProduct extends StatelessWidget {
             height: 16,
           ),
           TextField(
+            controller: mProductController.listVariantFormCtl[index]
+                ['stockCtl'],
             style: const TextStyle(fontSize: 14),
             cursorColor: primaryColor,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -451,7 +558,11 @@ class FormVariantProduct extends StatelessWidget {
           ),
           DropdownSearch<String>(
             items: const ['S', 'M', 'L', 'XL', 'XXL'],
+            selectedItem: mProductController.listVariantFormCtl[index]
+                ['sizeSelected'],
             onChanged: (String? value) {
+              mProductController.listVariantFormCtl[index]['sizeSelected'] =
+                  value;
               // controller.conditionSelected.value = value!;
             },
             popupProps: PopupProps.menu(
@@ -493,10 +604,10 @@ class FormVariantProduct extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              if (controller.countVariantForm.value <= 1) {
+              if (mProductController.listVariantFormCtl.length <= 1) {
                 return;
               }
-              controller.countVariantForm.value--;
+              mProductController.removeFormVariant(index);
             },
             style: ElevatedButton.styleFrom(
               primary: primaryColor,
@@ -519,8 +630,14 @@ class FormVariantProduct extends StatelessWidget {
   }
 }
 
-class DialogDetailProduct extends StatelessWidget {
-  const DialogDetailProduct({Key? key}) : super(key: key);
+class DialogVariantProduct extends StatelessWidget {
+  ProductModel product;
+  final mProductController = Get.find<ManageProductController>();
+
+  DialogVariantProduct({
+    required this.product,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -570,8 +687,8 @@ class DialogDetailProduct extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  children: const [
-                    Expanded(
+                  children: [
+                    const Expanded(
                       child: Text(
                         'Kode Produk',
                         style: TextStyle(fontSize: 14),
@@ -579,8 +696,8 @@ class DialogDetailProduct extends StatelessWidget {
                     ),
                     Expanded(
                       child: Text(
-                        'B02152F23',
-                        style: TextStyle(fontSize: 14),
+                        product.idDocument!,
+                        style: const TextStyle(fontSize: 14),
                       ),
                     ),
                   ],
@@ -590,8 +707,8 @@ class DialogDetailProduct extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  children: const [
-                    Expanded(
+                  children: [
+                    const Expanded(
                       child: Text(
                         'Nama Produk',
                         style: TextStyle(fontSize: 14),
@@ -599,8 +716,8 @@ class DialogDetailProduct extends StatelessWidget {
                     ),
                     Expanded(
                       child: Text(
-                        '3 Sezonds Bundle Item',
-                        style: TextStyle(fontSize: 14),
+                        product.productName,
+                        style: const TextStyle(fontSize: 14),
                       ),
                     ),
                   ],
@@ -610,8 +727,8 @@ class DialogDetailProduct extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  children: const [
-                    Expanded(
+                  children: [
+                    const Expanded(
                       child: Text(
                         'Harga Produk',
                         style: TextStyle(fontSize: 14),
@@ -619,8 +736,12 @@ class DialogDetailProduct extends StatelessWidget {
                     ),
                     Expanded(
                       child: Text(
-                        'Rp. 50.000',
-                        style: TextStyle(fontSize: 14),
+                        NumberFormat.currency(
+                          locale: 'id',
+                          symbol: 'Rp. ',
+                          decimalDigits: 0,
+                        ).format(product.price),
+                        style: const TextStyle(fontSize: 14),
                       ),
                     ),
                   ],
@@ -630,17 +751,22 @@ class DialogDetailProduct extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  children: const [
-                    Expanded(
+                  children: [
+                    const Expanded(
                       child: Text(
                         'Kategori Produk',
                         style: TextStyle(fontSize: 14),
                       ),
                     ),
                     Expanded(
-                      child: Text(
-                        'Baju Atasan',
-                        style: TextStyle(fontSize: 14),
+                      child: GetBuilder(
+                        init: mProductController,
+                        builder: (ctl) => Text(
+                          mProductController.ctgDetailProduct != null
+                              ? mProductController.ctgDetailProduct!.name
+                              : 'Kategori Tidak Ditemukan',
+                          style: const TextStyle(fontSize: 14),
+                        ),
                       ),
                     ),
                   ],
@@ -650,8 +776,8 @@ class DialogDetailProduct extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  children: const [
-                    Expanded(
+                  children: [
+                    const Expanded(
                       child: Text(
                         'Stok Produk',
                         style: TextStyle(fontSize: 14),
@@ -659,8 +785,8 @@ class DialogDetailProduct extends StatelessWidget {
                     ),
                     Expanded(
                       child: Text(
-                        '236 Unit',
-                        style: TextStyle(fontSize: 14),
+                        '${product.allStock} Unit',
+                        style: const TextStyle(fontSize: 14),
                       ),
                     ),
                   ],
@@ -676,55 +802,39 @@ class DialogDetailProduct extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Column(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(top: 16, bottom: 16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: primaryColor),
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(16),
-                      ),
-                    ),
-                    child: const ListTile(
-                      title: Text(
-                        'Merah',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      subtitle: Text(
-                        'XL',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      trailing: Text(
-                        '100 Unit',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: primaryColor),
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(16),
-                      ),
-                    ),
-                    child: const ListTile(
-                      title: Text(
-                        'Pink',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      subtitle: Text(
-                        'L',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      trailing: Text(
-                        '136 Unit',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ),
-                ],
+              GetBuilder(
+                init: mProductController,
+                builder: (ctl) {
+                  return Column(
+                    children: mProductController.listVariantProduct
+                        .map(
+                          (val) => Container(
+                            margin: const EdgeInsets.only(top: 16, bottom: 16),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: primaryColor),
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(16),
+                              ),
+                            ),
+                            child: ListTile(
+                              title: Text(
+                                'Warna ${val.color}',
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              subtitle: Text(
+                                'Ukuran ${val.size}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              trailing: Text(
+                                '${val.stock} Unit',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
               )
             ],
           ),
@@ -735,12 +845,14 @@ class DialogDetailProduct extends StatelessWidget {
 }
 
 class ProductTable extends StatelessWidget {
-  final screenSize;
+  double screenSize;
 
-  const ProductTable({
+  ProductTable({
     Key? key,
     required this.screenSize,
   }) : super(key: key);
+
+  final mProductController = Get.find<ManageProductController>();
 
   @override
   Widget build(BuildContext context) {
@@ -757,201 +869,299 @@ class ProductTable extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SingleChildScrollView(
-              child: DataTable(
-                dataRowHeight: 80,
-                columns: const [
-                  DataColumn(
-                    label: Expanded(
-                      child: Center(
-                        child: Text('Produk'),
-                      ),
-                    ),
+          return GetBuilder(
+            init: mProductController,
+            builder: (ctl) {
+              if (mProductController.isLoading.value) {
+                return const ShimmerTableProductLoading();
+              }
+
+              if (mProductController.listProduct.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('Yahhh, Belum ada satupun produk nih :('),
                   ),
-                  DataColumn(
-                    label: Expanded(
-                      child: Center(
-                        child: Text('Harga'),
-                      ),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Expanded(
-                      child: Center(
-                        child: Text('Kategori'),
-                      ),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Expanded(
-                      child: Center(
-                        child: Text('Stok Produk'),
-                      ),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Expanded(
-                      child: Center(
-                        child: Text('Aksi'),
-                      ),
-                    ),
-                  )
-                ],
-                rows: [
-                  DataRow(
-                    cells: [
-                      DataCell(
-                        SizedBox(
-                          width: constraints.maxWidth / 6,
-                          child: const Center(
-                            child: Text('Teasdaasdasdasdas  asdasdas sdasxt'),
-                          ),
+                );
+              }
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  dataRowHeight: 80,
+                  columns: const [
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Kode Produk'),
                         ),
                       ),
-                      DataCell(
-                        SizedBox(
-                          width: constraints.maxWidth / 6,
-                          child: const Center(
-                            child: Text('Rp. 500.000'),
-                          ),
+                    ),
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Produk'),
                         ),
                       ),
-                      DataCell(
-                        SizedBox(
-                          width: constraints.maxWidth / 6,
-                          child: const Center(
-                            child: Text('Baju Atasan'),
-                          ),
+                    ),
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Harga'),
                         ),
                       ),
-                      DataCell(
-                        SizedBox(
-                          width: constraints.maxWidth / 8,
-                          child: const Center(
-                            child: Text('1'),
-                          ),
+                    ),
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Stok Produk'),
                         ),
                       ),
-                      DataCell(
-                        SizedBox(
-                          width: screenSize > 850
-                              ? constraints.maxWidth / 6
-                              : constraints.maxWidth / 2,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) =>
-                                        const DialogDetailProduct(),
-                                  );
-                                },
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(12),
-                                ),
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: const BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
-                                    ),
-                                  ),
-                                  child: const Icon(
-                                    UniconsLine.eye,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
+                    ),
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Aksi'),
+                        ),
+                      ),
+                    )
+                  ],
+                  rows: mProductController.listProduct.map(
+                    (val) {
+                      return DataRow(
+                        cells: [
+                          DataCell(
+                            SizedBox(
+                              width: constraints.maxWidth / 7,
+                              child: Center(
+                                child: Text(val.idDocument!),
                               ),
-                              const SizedBox(
-                                width: 8,
+                            ),
+                          ),
+                          DataCell(
+                            SizedBox(
+                              width: constraints.maxWidth / 5,
+                              child: Center(
+                                child: Text(val.productName),
                               ),
-                              InkWell(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => DialogFormProduct(
-                                      titleForm: 'Ubah Produk',
-                                    ),
-                                  );
-                                },
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(12),
-                                ),
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: const BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
-                                    ),
-                                  ),
-                                  child: const Icon(
-                                    UniconsLine.edit,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
+                            ),
+                          ),
+                          DataCell(
+                            SizedBox(
+                              width: constraints.maxWidth / 6,
+                              child: Center(
+                                child: Text(
+                                  NumberFormat.currency(
+                                    locale: 'id',
+                                    symbol: 'Rp. ',
+                                    decimalDigits: 0,
+                                  ).format(val.price),
                                 ),
                               ),
-                              const SizedBox(
-                                width: 8,
+                            ),
+                          ),
+                          DataCell(
+                            SizedBox(
+                              width: constraints.maxWidth / 10,
+                              child: Center(
+                                child: Text(val.allStock.toString()),
                               ),
-                              InkWell(
-                                onTap: () {
-                                  Get.defaultDialog(
-                                    contentPadding: const EdgeInsets.all(32),
-                                    title: 'Hapus Produk',
-                                    middleText:
-                                        'Apakah kamu yakin ingin menghapus produk ini ?',
-                                    textConfirm: 'Ya',
-                                    textCancel: 'Tidak',
-                                    buttonColor: primaryColor,
-                                    confirmTextColor: Colors.white,
-                                    cancelTextColor: primaryColor,
-                                    onConfirm: () {
-                                      Get.back();
+                            ),
+                          ),
+                          DataCell(
+                            SizedBox(
+                              width: screenSize > 850
+                                  ? constraints.maxWidth / 5
+                                  : constraints.maxWidth / 2,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      mProductController.getCategoryProduct(
+                                        val.idCategory,
+                                      );
+
+                                      mProductController.readVariantProduct(
+                                        val.idDocument!,
+                                      );
+
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return DialogVariantProduct(
+                                            product: val,
+                                          );
+                                        },
+                                      );
                                     },
-                                    onCancel: () => Get.back(),
-                                  );
-                                },
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(12),
-                                ),
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: const BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(12),
+                                    ),
+                                    child: Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: const BoxDecoration(
+                                        color: primaryColor,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(8),
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        UniconsLine.eye,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                     ),
                                   ),
-                                  child: const Icon(
-                                    UniconsLine.trash_alt,
-                                    color: Colors.white,
-                                    size: 20,
+                                  const SizedBox(
+                                    width: 8,
                                   ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ),
+                                  InkWell(
+                                    onTap: () async {
+                                      mProductController.resetEditingCtl();
+
+                                      await mProductController
+                                          .readVariantProduct(
+                                        val.idDocument!,
+                                      );
+
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return DialogFormProduct(
+                                            titleForm: 'Ubah Produk',
+                                            action: true,
+                                            codeProduct: val.idDocument,
+                                            nameProduct: val.productName,
+                                            price: val.price,
+                                          );
+                                        },
+                                      );
+                                    },
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(12),
+                                    ),
+                                    child: Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: const BoxDecoration(
+                                        color: primaryColor,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(8),
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        UniconsLine.edit,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 8,
+                                  ),
+                                  InkWell(
+                                    onTap: () {
+                                      Get.defaultDialog(
+                                        contentPadding:
+                                            const EdgeInsets.all(32),
+                                        title: 'Hapus Produk',
+                                        middleText:
+                                            'Apakah kamu yakin ingin menghapus produk ini ?',
+                                        textConfirm: 'Ya',
+                                        textCancel: 'Tidak',
+                                        buttonColor: primaryColor,
+                                        confirmTextColor: Colors.white,
+                                        cancelTextColor: primaryColor,
+                                        onConfirm: () {
+                                          mProductController.deleteDataProduct(
+                                              val.idDocument!);
+                                        },
+                                        onCancel: () => Get.back(),
+                                      );
+                                    },
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(12),
+                                    ),
+                                    child: Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: const BoxDecoration(
+                                        color: primaryColor,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(8),
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        UniconsLine.trash_alt,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
+                      );
+                    },
+                  ).toList(),
+                ),
+              );
+            },
           );
         },
       ),
+    );
+  }
+}
+
+class ShimmerTableProductLoading extends StatelessWidget {
+  const ShimmerTableProductLoading({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return DataTable(
+      columns: const [
+        DataColumn(
+          label: Expanded(
+            child: Center(
+              child: Text('Kode Produk'),
+            ),
+          ),
+        ),
+        DataColumn(
+          label: Expanded(
+            child: Center(
+              child: Text('Produk'),
+            ),
+          ),
+        ),
+        DataColumn(
+          label: Expanded(
+            child: Center(
+              child: Text('Harga'),
+            ),
+          ),
+        ),
+        DataColumn(
+          label: Expanded(
+            child: Center(
+              child: Text('Stok Produk'),
+            ),
+          ),
+        ),
+        DataColumn(
+          label: Expanded(
+            child: Center(
+              child: Text('Aksi'),
+            ),
+          ),
+        )
+      ],
+      rows: const [],
     );
   }
 }

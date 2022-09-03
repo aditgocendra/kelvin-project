@@ -1,10 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Note : All stock is obtained from the sum of all product variants
 class ProductModel {
-  String? idProduct;
   String productName;
   String idCategory;
   int price;
   int allStock;
-  DateTime createdAt;
+  Timestamp createdAt;
+  String? idDocument;
 
   ProductModel({
     required this.productName,
@@ -13,6 +16,25 @@ class ProductModel {
     required this.idCategory,
     required this.createdAt,
   });
+
+  ProductModel.fromJson(Map<String, Object?> json)
+      : this(
+          productName: json['name']! as String,
+          idCategory: json['idCategory']! as String,
+          price: json['price']! as int,
+          allStock: json['allStock']! as int,
+          createdAt: json['createdAt']! as Timestamp,
+        );
+
+  Map<String, Object?> toJson() {
+    return {
+      'productName': productName,
+      'price': price,
+      'allStock': allStock,
+      'idCategory': idCategory,
+      'createdAt': createdAt,
+    };
+  }
 
   String getIndex(int index) {
     switch (index) {
@@ -36,34 +58,34 @@ final productData = [
     price: 50000,
     allStock: 80,
     idCategory: 'Bundaran',
-    createdAt: DateTime.now(),
+    createdAt: Timestamp.now(),
   ),
   ProductModel(
     productName: 'Tersesiuds',
     price: 50000,
     allStock: 80,
     idCategory: 'Baju Tidur',
-    createdAt: DateTime.now(),
+    createdAt: Timestamp.now(),
   ),
   ProductModel(
     productName: 'Black Market',
     price: 50000,
     allStock: 80,
     idCategory: 'Baju Main',
-    createdAt: DateTime.now(),
+    createdAt: Timestamp.now(),
   ),
   ProductModel(
     productName: 'Ntah Apa ini',
     price: 50000,
     allStock: 80,
     idCategory: 'Apa tah apa',
-    createdAt: DateTime.now(),
+    createdAt: Timestamp.now(),
   ),
   ProductModel(
     productName: 'Ntah Apa ini',
     price: 50000,
     allStock: 80,
     idCategory: 'Ntah',
-    createdAt: DateTime.now(),
+    createdAt: Timestamp.now(),
   )
 ];

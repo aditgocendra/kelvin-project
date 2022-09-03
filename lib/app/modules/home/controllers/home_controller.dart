@@ -7,9 +7,6 @@ class HomeController extends GetxController {
   // Sidebar Content
   final indexContent = 0.obs;
 
-  // Product Screen
-  final countVariantForm = 1.obs;
-
   // Transaction Screen
 
   final countProductTransactionForm = 0.obs;
