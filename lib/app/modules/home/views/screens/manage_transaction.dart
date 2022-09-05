@@ -1,14 +1,17 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/globals/styles.dart';
-import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
+import 'package:kelvin_project/app/modules/home/controllers/manage_transaction_controller.dart';
 import 'package:kelvin_project/services/local/pdf_services.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:unicons/unicons.dart';
 
 class ManageTransaction extends StatelessWidget {
-  const ManageTransaction({Key? key}) : super(key: key);
+  ManageTransaction({Key? key}) : super(key: key);
+  final mTransactionCtl = Get.find<ManageTransactionController>();
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +79,7 @@ class ManageTransaction extends StatelessWidget {
                         ),
                         InkWell(
                           onTap: () {
+                            mTransactionCtl.resetFormProduct();
                             showDialog(
                               context: context,
                               builder: (context) => DialogFormTransaction(),
@@ -171,6 +175,7 @@ class ManageTransaction extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: () {
+                        mTransactionCtl.resetFormProduct();
                         showDialog(
                           context: context,
                           builder: (context) => DialogFormTransaction(),
@@ -220,7 +225,7 @@ class ManageTransaction extends StatelessWidget {
 }
 
 class DialogFormTransaction extends StatelessWidget {
-  final controller = Get.find<HomeController>();
+  final mTransactionCtl = Get.find<ManageTransactionController>();
   DialogFormTransaction({
     Key? key,
   }) : super(key: key);
@@ -246,6 +251,7 @@ class DialogFormTransaction extends StatelessWidget {
         ),
         child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -274,6 +280,7 @@ class DialogFormTransaction extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: TextField(
+                        controller: mTransactionCtl.codeProductTec,
                         style: const TextStyle(fontSize: 14),
                         cursorColor: primaryColor,
                         decoration:
@@ -284,23 +291,40 @@ class DialogFormTransaction extends StatelessWidget {
                   const SizedBox(
                     width: 12,
                   ),
-                  IconButton(
-                    onPressed: () => controller.addProductForm(),
-                    icon: const Icon(
-                      UniconsLine.plus_circle,
-                      color: primaryColor,
-                    ),
-                  ),
+                  Obx(
+                    () {
+                      if (mTransactionCtl.isLoadingGetProduct.value) {
+                        return const CircularProgressIndicator();
+                      }
+                      return IconButton(
+                        onPressed: () {
+                          mTransactionCtl.addFormProduct();
+                        },
+                        icon: const Icon(
+                          UniconsLine.plus_circle,
+                          color: primaryColor,
+                        ),
+                      );
+                    },
+                  )
                 ],
               ),
-              // Form Product Transaction
+              // Warning Error
               Obx(
-                () => ListView.builder(
-                  itemCount: controller.countProductTransactionForm.value,
+                () => Text(
+                  mTransactionCtl.errorMessageForm.value,
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
+              ),
+              // Form Product Transaction
+              GetBuilder(
+                init: mTransactionCtl,
+                builder: (_) => ListView.builder(
+                  itemCount: mTransactionCtl.listProductForm.length,
                   shrinkWrap: true,
                   primary: false,
                   itemBuilder: (context, index) => FormProductTransaction(
-                    index: index,
+                    indexProduct: index,
                   ),
                 ),
               ),
@@ -317,19 +341,25 @@ class DialogFormTransaction extends StatelessWidget {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text(
+                  children: [
+                    const Text(
                       'Total Bayar',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      'Rp. 240.000',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: primaryColor,
+                    Obx(
+                      () => Text(
+                        NumberFormat.currency(
+                          locale: 'id',
+                          symbol: 'Rp. ',
+                          decimalDigits: 0,
+                        ).format(mTransactionCtl.totalPay.value),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: primaryColor,
+                        ),
                       ),
                     )
                   ],
@@ -339,7 +369,9 @@ class DialogFormTransaction extends StatelessWidget {
                 height: 16,
               ),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  mTransactionCtl.createTransaction();
+                },
                 style: ElevatedButton.styleFrom(
                   primary: primaryColor,
                   elevation: 0.5,
@@ -351,7 +383,7 @@ class DialogFormTransaction extends StatelessWidget {
                   minimumSize: const Size.fromHeight(50),
                 ),
                 child: const Text(
-                  'Simpan',
+                  'Transaksi',
                   style: TextStyle(fontSize: 14),
                 ),
               )
@@ -364,7 +396,8 @@ class DialogFormTransaction extends StatelessWidget {
 }
 
 class DialogDetailTransaction extends StatelessWidget {
-  const DialogDetailTransaction({Key? key}) : super(key: key);
+  final mTransactionCtl = Get.find<ManageTransactionController>();
+  DialogDetailTransaction({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -416,19 +449,27 @@ class DialogDetailTransaction extends StatelessWidget {
                     Radius.circular(16),
                   ),
                 ),
-                child: const ListTile(
-                  title: Text(
-                    'Kode Transaksi : TR-KL-2022-08-12-B023SJHFD',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                child: Obx(
+                  () => ListTile(
+                    title: Text(
+                      'Kode Transaksi : ${mTransactionCtl.codeTrans.value}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  trailing: Text(
-                    'Rp. 540.000',
-                    style: TextStyle(
-                      color: primaryColor,
-                      fontWeight: FontWeight.bold,
+                    trailing: Text(
+                      NumberFormat.currency(
+                        locale: 'id',
+                        symbol: 'Rp. ',
+                        decimalDigits: 0,
+                      ).format(
+                        mTransactionCtl.totalPayTransDetail.value,
+                      ),
+                      style: const TextStyle(
+                        color: primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -436,92 +477,75 @@ class DialogDetailTransaction extends StatelessWidget {
               const SizedBox(
                 height: 16,
               ),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: primaryColor),
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(16),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    const ListTile(
-                      title: Text(
-                        '3 Seconds Bundle Transctip',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'Kode Produk : B023SJHFD',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      trailing: Text(
-                        '3 Unit',
-                        style: TextStyle(
-                          color: primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: primaryColor),
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(16),
-                        ),
-                      ),
-                      child: Column(
-                        children: const [
-                          ListTile(
-                            title: Text(
-                              'Warna : Biru',
-                              style: TextStyle(
-                                fontSize: 12,
-                              ),
-                            ),
-                            trailing: Text(
-                              'Ukuran : XL',
-                              style: TextStyle(
-                                fontSize: 12,
-                              ),
-                            ),
+              GetBuilder(
+                init: mTransactionCtl,
+                builder: (ctl) {
+                  return ListView.builder(
+                    itemCount: mTransactionCtl.listDetailTransDialog.length,
+                    shrinkWrap: true,
+                    primary: false,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: primaryColor),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(16),
                           ),
-                          ListTile(
-                            title: Text(
-                              'Warna : Merah',
-                              style: TextStyle(
-                                fontSize: 12,
+                        ),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              title: Text(
+                                mTransactionCtl
+                                    .listDetailTransDialog[index].productName,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text(
+                                'Kode Produk : ${mTransactionCtl.listDetailTransDialog[index].idDocument}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              trailing: Text(
+                                '${mTransactionCtl.listDetailTransDialog[index].variant!.length} Unit',
+                                style: const TextStyle(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                            trailing: Text(
-                              'Ukuran : XL',
-                              style: TextStyle(
-                                fontSize: 12,
+                            Container(
+                              margin: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: primaryColor),
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(16),
+                                ),
                               ),
-                            ),
-                          ),
-                          ListTile(
-                            title: Text(
-                              'Warna : Ungu',
-                              style: TextStyle(
-                                fontSize: 12,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: mTransactionCtl
+                                    .listDetailTransDialog[index].variant!
+                                    .map(
+                                      (val) => Text(
+                                        'Varian : $val',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
                               ),
-                            ),
-                            trailing: Text(
-                              'Ukuran : XL',
-                              style: TextStyle(
-                                fontSize: 12,
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    )
-                  ],
-                ),
+                            )
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
               )
             ],
           ),
@@ -532,10 +556,13 @@ class DialogDetailTransaction extends StatelessWidget {
 }
 
 class FormProductTransaction extends StatelessWidget {
-  final controller = Get.find<HomeController>();
-  final index;
+  final mTransactionCtl = Get.find<ManageTransactionController>();
+  int indexProduct;
 
-  FormProductTransaction({Key? key, required this.index}) : super(key: key);
+  FormProductTransaction({
+    Key? key,
+    required this.indexProduct,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -552,20 +579,27 @@ class FormProductTransaction extends StatelessWidget {
         children: [
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text(
-              '3 Seconds Bundle',
-              style: TextStyle(fontSize: 13),
+            title: Text(
+              mTransactionCtl
+                  .listProductForm[indexProduct]['product'].productName,
+              style: const TextStyle(fontSize: 13),
             ),
-            subtitle: const Text(
-              'Rp. 50.000',
-              style: TextStyle(fontSize: 11),
+            subtitle: Text(
+              NumberFormat.currency(
+                locale: 'id',
+                symbol: 'Rp. ',
+                decimalDigits: 0,
+              ).format(
+                mTransactionCtl.listProductForm[indexProduct]['product'].price,
+              ),
+              style: const TextStyle(fontSize: 11),
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
                   onPressed: () {
-                    controller.listProductVariantTransactionForm[index].value++;
+                    mTransactionCtl.addFieldVariant(indexProduct);
                   },
                   icon: const Icon(
                     UniconsLine.plus_circle,
@@ -574,12 +608,7 @@ class FormProductTransaction extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: () {
-                    if (controller
-                            .listProductVariantTransactionForm[index].value <=
-                        1) {
-                      return;
-                    }
-                    controller.listProductVariantTransactionForm[index].value--;
+                    mTransactionCtl.removeFieldVariant(indexProduct);
                   },
                   icon: const Icon(
                     UniconsLine.minus_circle,
@@ -589,18 +618,14 @@ class FormProductTransaction extends StatelessWidget {
               ],
             ),
           ),
-          Obx(
-            () {
-              return ListView.builder(
-                itemCount:
-                    controller.listProductVariantTransactionForm[index].value,
-                shrinkWrap: true,
-                primary: false,
-                itemBuilder: (context, index) => FormProductVariantTransaction(
-                  index: index,
-                ),
-              );
-            },
+          // Variant Field
+          ListView.builder(
+            itemCount: mTransactionCtl
+                .listProductForm[indexProduct]['variantSelected'].length,
+            shrinkWrap: true,
+            primary: false,
+            itemBuilder: (context, index) => FormProductVariantTransaction(
+                indexProduct: indexProduct, indexVariant: index),
           ),
           const SizedBox(
             height: 16,
@@ -609,7 +634,11 @@ class FormProductTransaction extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               ElevatedButton(
-                onPressed: () => controller.removeProductForm(index),
+                onPressed: () {
+                  mTransactionCtl.listProductForm.removeAt(indexProduct);
+                  mTransactionCtl.updateTotalPay();
+                  mTransactionCtl.update();
+                },
                 style: ElevatedButton.styleFrom(
                   primary: primaryColor,
                   elevation: 0.5,
@@ -624,13 +653,11 @@ class FormProductTransaction extends StatelessWidget {
                   style: TextStyle(fontSize: 11),
                 ),
               ),
-              Obx(
-                () => Text(
-                  'Jumlah : ${controller.listProductVariantTransactionForm[index].value}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
+              Text(
+                'Jumlah : ${mTransactionCtl.listProductForm[indexProduct]['variantSelected'].length}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -642,20 +669,25 @@ class FormProductTransaction extends StatelessWidget {
 }
 
 class FormProductVariantTransaction extends StatelessWidget {
-  final controller = Get.find<HomeController>();
-  final index;
+  final mTransactionCtl = Get.find<ManageTransactionController>();
+  int indexProduct;
+  int indexVariant;
 
-  FormProductVariantTransaction({Key? key, required this.index})
-      : super(key: key);
+  FormProductVariantTransaction({
+    Key? key,
+    required this.indexProduct,
+    required this.indexVariant,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: DropdownSearch<String>(
-        items: const ['Merah | XL', 'Pink | L'],
+        items: mTransactionCtl.listProductForm[indexProduct]['variantProduct'],
         onChanged: (String? value) {
-          // controller.conditionSelected.value = value!;
+          mTransactionCtl.listProductForm[indexProduct]['variantSelected']
+              [indexVariant] = value;
         },
         popupProps: PopupProps.menu(
           showSelectedItems: true,
@@ -696,9 +728,10 @@ class FormProductVariantTransaction extends StatelessWidget {
 }
 
 class TransactionTable extends StatelessWidget {
-  final screenSize;
+  double screenSize;
+  final mTransactionCtl = Get.find<ManageTransactionController>();
 
-  const TransactionTable({
+  TransactionTable({
     Key? key,
     required this.screenSize,
   }) : super(key: key);
@@ -706,158 +739,192 @@ class TransactionTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        width: double.infinity,
-        margin: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(16),
-          ),
-          border: Border.all(
-            color: Colors.grey.shade200,
-          ),
+      width: double.infinity,
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(
+          Radius.circular(16),
         ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                dataRowHeight: 90,
-                columns: const [
-                  DataColumn(
-                    label: Expanded(
-                      child: Center(
-                        child: Text('Nomor'),
-                      ),
-                    ),
+        border: Border.all(
+          color: Colors.grey.shade200,
+        ),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return GetBuilder(
+            init: mTransactionCtl,
+            builder: (_) {
+              if (mTransactionCtl.isLoadingTableData.value) {
+                return const ShimmerTransactionTable();
+              }
+
+              if (mTransactionCtl.listDataTable.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('Yahhh, Belum ada satupun transaksi nih :('),
                   ),
-                  DataColumn(
-                    label: Expanded(
-                      child: Center(
-                        child: Text('Kode Transaksi'),
-                      ),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Expanded(
-                      child: Center(
-                        child: Text('Total Pembayaran'),
-                      ),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Expanded(
-                      child: Center(
-                        child: Text('Aksi'),
-                      ),
-                    ),
-                  )
-                ],
-                rows: [
-                  DataRow(
-                    cells: [
-                      DataCell(
-                        SizedBox(
-                          width: constraints.maxWidth / 7,
-                          child: const Center(
-                            child: Text(
-                              '1',
-                            ),
-                          ),
+                );
+              }
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  dataRowHeight: 90,
+                  columns: const [
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Nomor'),
                         ),
                       ),
-                      DataCell(
-                        SizedBox(
-                          width: constraints.maxWidth / 4,
-                          child: const Center(
-                            child: Text(
-                              'TR-KL-2022-15-05-AT-BWEWDSGSDKLFE',
-                              maxLines: 3,
-                            ),
-                          ),
+                    ),
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Kode Transaksi'),
                         ),
                       ),
-                      DataCell(
-                        SizedBox(
-                          width: constraints.maxWidth / 5,
-                          child: const Center(
-                            child: Text(
-                              'Rp. 540.000',
-                            ),
-                          ),
+                    ),
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Total Pembayaran'),
                         ),
                       ),
-                      DataCell(
-                        SizedBox(
-                          width: screenSize > 450
-                              ? constraints.maxWidth / 4
-                              : constraints.maxWidth / 3,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) =>
-                                        const DialogDetailTransaction(),
-                                  );
-                                },
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(12),
-                                ),
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: const BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
+                    ),
+                    DataColumn(
+                      label: Expanded(
+                        child: Center(
+                          child: Text('Aksi'),
+                        ),
+                      ),
+                    )
+                  ],
+                  rows: mTransactionCtl.listDataTable
+                      .asMap()
+                      .map(
+                        (index, value) => MapEntry(
+                          index,
+                          DataRow(
+                            cells: [
+                              DataCell(
+                                SizedBox(
+                                  width: constraints.maxWidth / 7,
+                                  child: Center(
+                                    child: Text(
+                                      (index + 1).toString(),
                                     ),
-                                  ),
-                                  child: const Icon(
-                                    UniconsLine.eye,
-                                    color: Colors.white,
-                                    size: 20,
                                   ),
                                 ),
                               ),
-                              const SizedBox(
-                                width: 8,
-                              ),
-                              InkWell(
-                                onTap: () {
-                                  Get.defaultDialog(
-                                    contentPadding: const EdgeInsets.all(32),
-                                    title: 'Hapus Transaksi',
-                                    middleText:
-                                        'Apakah kamu yakin ingin menghapus transaksi ini ?',
-                                    textConfirm: 'Ya',
-                                    textCancel: 'Tidak',
-                                    buttonColor: primaryColor,
-                                    confirmTextColor: Colors.white,
-                                    cancelTextColor: primaryColor,
-                                    onConfirm: () {
-                                      Get.back();
-                                    },
-                                    onCancel: () => Get.back(),
-                                  );
-                                },
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(12),
-                                ),
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: const BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
+                              DataCell(
+                                SizedBox(
+                                  width: constraints.maxWidth / 4,
+                                  child: Center(
+                                    child: Text(
+                                      value.idDocument!,
+                                      maxLines: 3,
                                     ),
                                   ),
-                                  child: const Icon(
-                                    UniconsLine.trash_alt,
-                                    color: Colors.white,
-                                    size: 20,
+                                ),
+                              ),
+                              DataCell(
+                                SizedBox(
+                                  width: constraints.maxWidth / 5,
+                                  child: Center(
+                                    child: Text(
+                                      NumberFormat.currency(
+                                        locale: 'id',
+                                        symbol: 'Rp. ',
+                                        decimalDigits: 0,
+                                      ).format(value.totalPay),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                SizedBox(
+                                  width: screenSize > 450
+                                      ? constraints.maxWidth / 4
+                                      : constraints.maxWidth / 3,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          mTransactionCtl
+                                              .setDialogDetailTransaction(
+                                            value,
+                                          );
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) =>
+                                                DialogDetailTransaction(),
+                                          );
+                                        },
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(12),
+                                        ),
+                                        child: Container(
+                                          width: 32,
+                                          height: 32,
+                                          decoration: const BoxDecoration(
+                                            color: primaryColor,
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(8),
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            UniconsLine.eye,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 8,
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          Get.defaultDialog(
+                                            contentPadding:
+                                                const EdgeInsets.all(32),
+                                            title: 'Hapus Transaksi',
+                                            middleText:
+                                                'Apakah kamu yakin ingin menghapus transaksi ini ?',
+                                            textConfirm: 'Ya',
+                                            textCancel: 'Tidak',
+                                            buttonColor: primaryColor,
+                                            confirmTextColor: Colors.white,
+                                            cancelTextColor: primaryColor,
+                                            onConfirm: () {
+                                              mTransactionCtl.deleteTransaction(
+                                                  value.idDocument!);
+                                            },
+                                            onCancel: () => Get.back(),
+                                          );
+                                        },
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(12),
+                                        ),
+                                        child: Container(
+                                          width: 32,
+                                          height: 32,
+                                          decoration: const BoxDecoration(
+                                            color: primaryColor,
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(8),
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            UniconsLine.trash_alt,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      )
+                                    ],
                                   ),
                                 ),
                               )
@@ -865,12 +932,60 @@ class TransactionTable extends StatelessWidget {
                           ),
                         ),
                       )
-                    ],
-                  )
-                ],
-              ),
-            );
-          },
-        ));
+                      .values
+                      .toList(),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class ShimmerTransactionTable extends StatelessWidget {
+  const ShimmerTransactionTable({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return DataTable(columns: [
+      DataColumn(
+        label: Expanded(
+          child: Shimmer.fromColors(
+            baseColor: Colors.grey.shade600,
+            highlightColor: Colors.grey.shade200,
+            child: const Text('Nomor'),
+          ),
+        ),
+      ),
+      DataColumn(
+        label: Expanded(
+          child: Shimmer.fromColors(
+            baseColor: Colors.grey.shade600,
+            highlightColor: Colors.grey.shade200,
+            child: const Text('Kode Transaksi'),
+          ),
+        ),
+      ),
+      DataColumn(
+        label: Expanded(
+          child: Shimmer.fromColors(
+            baseColor: Colors.grey.shade600,
+            highlightColor: Colors.grey.shade200,
+            child: const Text('Total Pembayaran'),
+          ),
+        ),
+      ),
+      DataColumn(
+        label: Expanded(
+          child: Shimmer.fromColors(
+            baseColor: Colors.grey.shade600,
+            highlightColor: Colors.grey.shade200,
+            child: const Text('Aksi'),
+          ),
+        ),
+      )
+    ], rows: const []);
   }
 }
