@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/models/category.dart';
 import 'package:kelvin_project/app/models/products.dart';
 import 'package:kelvin_project/app/models/variant_product.dart';
@@ -47,7 +46,7 @@ class ManageProductController extends GetxController {
   // Read Data Variant Product
   Future readVariantProduct(String idDoc) async {
     listVariantProduct.clear();
-    final result = await FirestoreService.refSubCollection(
+    final result = await FirestoreService.refSubCollectionProduct(
       idDoc: idDoc,
       collection: 'products',
       subCollectionPath: 'variant_product',
@@ -124,7 +123,7 @@ class ManageProductController extends GetxController {
       }
 
       // Create variant product
-      createVariantProduct(codeProduct);
+      await createVariantProduct(codeProduct);
 
       update();
     }).catchError(
@@ -141,7 +140,7 @@ class ManageProductController extends GetxController {
         stock: int.parse(listVariantFormCtl[i]['stockCtl'].text),
       );
 
-      await FirestoreService.refSubCollection(
+      await FirestoreService.refSubCollectionProduct(
         idDoc: idDoc,
         collection: 'products',
         subCollectionPath: 'variant_product',
@@ -172,7 +171,7 @@ class ManageProductController extends GetxController {
 
   // Delete Variant Product
   Future deleteVariantProduct(String idDoc) async {
-    final result = await FirestoreService.refSubCollection(
+    final result = await FirestoreService.refSubCollectionProduct(
             idDoc: idDoc,
             collection: 'products',
             subCollectionPath: 'variant_product')
