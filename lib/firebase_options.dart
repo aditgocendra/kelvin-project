@@ -53,12 +53,12 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCszjCFMVWCT2uHn2QaT3lfDUkEpjaMzNk',
-    appId: '1:409814758766:web:8af7ebaecb87a0e813fd7f',
-    messagingSenderId: '409814758766',
-    projectId: 'kelvin-project-12d16',
-    authDomain: 'kelvin-project-12d16.firebaseapp.com',
-    storageBucket: 'kelvin-project-12d16.appspot.com',
-    measurementId: 'G-CRLWM1Q45S',
+    apiKey: 'AIzaSyA_kr8Q3Lr4QZOxdB3U83HHYS_rvoqf3Gs',
+    appId: '1:505024910198:web:c5ad1357caf2a00928e057',
+    messagingSenderId: '505024910198',
+    projectId: 'klabels-18583',
+    authDomain: 'klabels-18583.firebaseapp.com',
+    storageBucket: 'klabels-18583.appspot.com',
+    measurementId: 'G-D3DR11JFK7',
   );
 }
