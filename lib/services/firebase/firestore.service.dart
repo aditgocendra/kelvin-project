@@ -3,6 +3,7 @@ import 'package:kelvin_project/app/models/category.dart';
 import 'package:kelvin_project/app/models/detail_transaction.dart';
 import 'package:kelvin_project/app/models/products.dart';
 import 'package:kelvin_project/app/models/transaction.dart';
+import 'package:kelvin_project/app/models/users.dart';
 import 'package:kelvin_project/app/models/variant_product.dart';
 
 abstract class FirestoreService {
@@ -28,6 +29,12 @@ abstract class FirestoreService {
       .withConverter<TransactionModel>(
           fromFirestore: (snapshot, _) =>
               TransactionModel.fromJson(snapshot.data()!),
+          toFirestore: (ctg, _) => ctg.toJson());
+
+  static final refUsers = FirebaseFirestore.instance
+      .collection('users')
+      .withConverter<UserModel>(
+          fromFirestore: (snapshot, _) => UserModel.fromJson(snapshot.data()!),
           toFirestore: (ctg, _) => ctg.toJson());
 
   // Reference Sub Collection
