@@ -7,24 +7,6 @@ class HomeController extends GetxController {
   // Sidebar Content
   final indexContent = 0.obs;
 
-  // Transaction Screen
-
-  final countProductTransactionForm = 0.obs;
-  List<dynamic> listProductVariantTransactionForm = [1.obs];
-
-  void addProductForm() {
-    countProductTransactionForm.value++;
-    listProductVariantTransactionForm.add(1.obs);
-  }
-
-  void removeProductForm(int index) {
-    if (countProductTransactionForm.value <= 1) {
-      return;
-    }
-    countProductTransactionForm.value--;
-    listProductVariantTransactionForm.removeAt(index);
-  }
-
   void logout() {
     isLogin.toggle();
   }
