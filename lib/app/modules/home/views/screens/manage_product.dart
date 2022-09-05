@@ -9,6 +9,7 @@ import 'package:kelvin_project/app/models/category.dart';
 import 'package:kelvin_project/app/models/products.dart';
 import 'package:kelvin_project/app/modules/home/controllers/manage_product_controller.dart';
 import 'package:kelvin_project/services/local/pdf_services.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:unicons/unicons.dart';
 
 class ManageProduct extends StatelessWidget {
@@ -1124,39 +1125,49 @@ class ShimmerTableProductLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DataTable(
-      columns: const [
+      columns: [
         DataColumn(
           label: Expanded(
-            child: Center(
-              child: Text('Kode Produk'),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey.shade600,
+              highlightColor: Colors.grey.shade200,
+              child: const Text('Kode Transaksi'),
             ),
           ),
         ),
         DataColumn(
           label: Expanded(
-            child: Center(
-              child: Text('Produk'),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey.shade600,
+              highlightColor: Colors.grey.shade200,
+              child: const Text('Produk'),
             ),
           ),
         ),
         DataColumn(
           label: Expanded(
-            child: Center(
-              child: Text('Harga'),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey.shade600,
+              highlightColor: Colors.grey.shade200,
+              child: const Text('Harga'),
             ),
           ),
         ),
         DataColumn(
           label: Expanded(
-            child: Center(
-              child: Text('Stok Produk'),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey.shade600,
+              highlightColor: Colors.grey.shade200,
+              child: const Text('Stok Produk'),
             ),
           ),
         ),
         DataColumn(
           label: Expanded(
-            child: Center(
-              child: Text('Aksi'),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey.shade600,
+              highlightColor: Colors.grey.shade200,
+              child: const Text('Aksi'),
             ),
           ),
         )
