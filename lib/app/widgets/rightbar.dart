@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
+import 'package:kelvin_project/app/routes/app_pages.dart';
 import 'package:unicons/unicons.dart';
 
 class Rightbar extends StatelessWidget {
@@ -81,7 +82,7 @@ class User extends StatelessWidget {
                 cancelTextColor: primaryColor,
                 onConfirm: () {
                   Get.back();
-                  controller.logout();
+                  Get.offAndToNamed(Routes.LOGIN);
                 },
                 onCancel: () => Get.back(),
               );

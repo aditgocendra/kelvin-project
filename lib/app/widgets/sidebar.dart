@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
+import 'package:kelvin_project/app/routes/app_pages.dart';
 
 class Sidebar extends StatelessWidget {
   const Sidebar({Key? key}) : super(key: key);
@@ -136,6 +137,7 @@ class NavItemSidebar extends StatelessWidget {
                     cancelTextColor: primaryColor,
                     onConfirm: () {
                       Get.back();
+                      Get.offAndToNamed(Routes.LOGIN);
                     },
                     onCancel: () => Get.back(),
                   );

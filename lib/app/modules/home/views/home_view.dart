@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:kelvin_project/app/modules/home/views/screens/dashboard.dart';
-import 'package:kelvin_project/app/modules/home/views/screens/login.dart';
 import 'package:kelvin_project/app/modules/home/views/screens/manage_category.dart';
 import 'package:kelvin_project/app/modules/home/views/screens/manage_product.dart';
 import 'package:kelvin_project/app/modules/home/views/screens/manage_transaction.dart';
@@ -18,16 +17,8 @@ class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    // return AdminPanel(controller: controller, screenSize: screenSize);
     return Scaffold(
-      body: Obx(
-        () {
-          if (controller.isLogin.value) {
-            return AdminPanel();
-          }
-          return Login();
-        },
-      ),
+      body: AdminPanel(),
     );
   }
 }
