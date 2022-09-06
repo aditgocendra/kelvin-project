@@ -19,8 +19,10 @@ class HomeController extends GetxController {
 
   @override
   void onInit() async {
-    username.value = await pref.readCache();
-    print(username);
+    final result = await pref.readCache();
+
+    username.value = result;
+
     super.onInit();
   }
 }

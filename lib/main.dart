@@ -12,6 +12,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   final user = await SharedPrefService().readCache();
 
   runApp(
@@ -22,7 +23,7 @@ void main() async {
 }
 
 class App extends StatelessWidget {
-  String user;
+  dynamic user;
   App({
     required this.user,
     Key? key,
@@ -42,7 +43,7 @@ class App extends StatelessWidget {
               ),
         ),
       ),
-      initialRoute: user.isEmpty ? Routes.LOGIN : AppPages.INITIAL,
+      initialRoute: user == null ? Routes.LOGIN : AppPages.INITIAL,
       getPages: AppPages.routes,
     );
   }

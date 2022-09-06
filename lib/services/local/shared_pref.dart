@@ -6,11 +6,11 @@ class SharedPrefService {
     pref.setString('username', username);
   }
 
-  Future<String> readCache() async {
+  Future readCache() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     final username = pref.getString('username');
 
-    return username!;
+    return username;
   }
 
   Future removeCache() async {
