@@ -19,10 +19,10 @@ abstract class FirestoreService {
 
   static final refProduct = FirebaseFirestore.instance
       .collection('products')
-      .withConverter<ProductModel>(
-          fromFirestore: (snapshot, _) =>
-              ProductModel.fromJson(snapshot.data()!),
-          toFirestore: (ctg, _) => ctg.toJson());
+      .withConverter(
+          fromFirestore: ProductModel.fromFirestore,
+          toFirestore: (ProductModel productModel, options) =>
+              productModel.toFirestore());
 
   static final refTransaction = FirebaseFirestore.instance
       .collection('transactions')
