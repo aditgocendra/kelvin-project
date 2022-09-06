@@ -2,11 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:kelvin_project/app/routes/app_pages.dart';
-
 import 'package:kelvin_project/services/firebase/firestore.service.dart';
 import 'package:kelvin_project/services/local/encryption.dart';
+import 'package:kelvin_project/services/local/shared_pref.dart';
 
 class LoginController extends GetxController {
+  // Shared Preferences
+  final prefService = SharedPrefService();
+
   // Loading
   final isLoading = false.obs;
 
@@ -55,6 +58,9 @@ class LoginController extends GetxController {
       isLoading.toggle();
       return;
     }
+
+    // Set Preferences Data
+    prefService.createCache(userData['username']);
 
     // Login Success
     Get.offAndToNamed(Routes.HOME);

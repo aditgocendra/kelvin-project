@@ -137,7 +137,7 @@ class NavItemSidebar extends StatelessWidget {
                     cancelTextColor: primaryColor,
                     onConfirm: () {
                       Get.back();
-                      Get.offAndToNamed(Routes.LOGIN);
+                      controller.logout();
                     },
                     onCancel: () => Get.back(),
                   );

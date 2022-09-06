@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kelvin_project/firebase_options.dart';
+import 'package:kelvin_project/services/local/shared_pref.dart';
 
 import 'app/routes/app_pages.dart';
 
@@ -11,11 +12,21 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const App());
+  final user = await SharedPrefService().readCache();
+
+  runApp(
+    App(
+      user: user,
+    ),
+  );
 }
 
 class App extends StatelessWidget {
-  const App({Key? key}) : super(key: key);
+  String user;
+  App({
+    required this.user,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +42,7 @@ class App extends StatelessWidget {
               ),
         ),
       ),
-      initialRoute: Routes.LOGIN,
+      initialRoute: user.isEmpty ? Routes.LOGIN : AppPages.INITIAL,
       getPages: AppPages.routes,
     );
   }

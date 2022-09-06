@@ -58,13 +58,17 @@ class User extends StatelessWidget {
           const SizedBox(
             height: 8,
           ),
-          const Text(
-            'Si Paling Keren',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.black87,
-            ),
-            textAlign: TextAlign.center,
+          Obx(
+            () {
+              return Text(
+                controller.username.value,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              );
+            },
           ),
           const SizedBox(
             height: 8,
