@@ -99,6 +99,7 @@ class ManageProductController extends GetxController {
       allStock: allStock,
       idCategory: idCategorySelected!,
       createdAt: FirestoreService.timeStamp,
+      searchKeyword: generateSearchKeyword(sentence: nameProduct),
     );
 
     await FirestoreService.refProduct
@@ -209,6 +210,13 @@ class ManageProductController extends GetxController {
     return true;
   }
 
+  List<String> generateSearchKeyword({required String sentence}) {
+    String clearSymbol = sentence.replaceAll(RegExp(r"[^\s\w]"), '');
+    String clear2WhiteSpace = clearSymbol.replaceAll('  ', ' ');
+
+    return clear2WhiteSpace.toLowerCase().split(" ");
+  }
+
   // Add Form Variant
   void addFormVariant() {
     // listVariantProduct.add(defaultVariantProduct);
@@ -234,6 +242,7 @@ class ManageProductController extends GetxController {
         allStock: doc['allStock'],
         idCategory: doc['idCategory'],
         createdAt: doc['createdAt'],
+        searchKeyword: List<String>.from(doc['searchKeyword']),
       );
       product.idDocument = doc.id;
       listProduct.add(product);

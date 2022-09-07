@@ -7,6 +7,7 @@ class ProductModel {
   int price;
   int allStock;
   Timestamp createdAt;
+  List<String>? searchKeyword;
   String? idDocument;
 
   ProductModel({
@@ -15,26 +16,56 @@ class ProductModel {
     required this.allStock,
     required this.idCategory,
     required this.createdAt,
+    required this.searchKeyword,
   });
 
-  ProductModel.fromJson(Map<String, Object?> json)
-      : this(
-          productName: json['name']! as String,
-          idCategory: json['idCategory']! as String,
-          price: json['price']! as int,
-          allStock: json['allStock']! as int,
-          createdAt: json['createdAt']! as Timestamp,
-        );
+  factory ProductModel.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+    SnapshotOptions? options,
+  ) {
+    final data = snapshot.data();
+    return ProductModel(
+      productName: data?['productName'],
+      idCategory: data?['idCategory'],
+      price: data?['price'],
+      allStock: data?['allStock'],
+      createdAt: data?['createdAt'],
+      searchKeyword: data?['searchKeyword'] is Iterable
+          ? List.from(data?['searchKeyword'])
+          : null,
+    );
+  }
 
-  Map<String, Object?> toJson() {
+  Map<String, dynamic> toFirestore() {
     return {
-      'productName': productName,
-      'price': price,
-      'allStock': allStock,
-      'idCategory': idCategory,
-      'createdAt': createdAt,
+      "productName": productName,
+      "idCategory": idCategory,
+      "price": price,
+      "allStock": allStock,
+      "createdAt": createdAt,
+      if (searchKeyword != null) "searchKeyword": searchKeyword,
     };
   }
+
+  // ProductModel.fromJson(Map<String, Object?> json)
+  //     : this(
+  //         productName: json['name']! as String,
+  //         idCategory: json['idCategory']! as String,
+  //         price: json['price']! as int,
+  //         allStock: json['allStock']! as int,
+  //         createdAt: json['createdAt']! as Timestamp,
+
+  //       );
+
+  // Map<String, Object?> toJson() {
+  //   return {
+  //     'productName': productName,
+  //     'price': price,
+  //     'allStock': allStock,
+  //     'idCategory': idCategory,
+  //     'createdAt': createdAt,
+  //   };
+  // }
 
   String getIndex(int index) {
     switch (index) {
@@ -58,6 +89,7 @@ final productData = [
     price: 50000,
     allStock: 80,
     idCategory: 'Bundaran',
+    searchKeyword: ['3', 'Seconds'],
     createdAt: Timestamp.now(),
   ),
   ProductModel(
@@ -65,6 +97,7 @@ final productData = [
     price: 50000,
     allStock: 80,
     idCategory: 'Baju Tidur',
+    searchKeyword: ['3', 'Seconds'],
     createdAt: Timestamp.now(),
   ),
   ProductModel(
@@ -72,6 +105,7 @@ final productData = [
     price: 50000,
     allStock: 80,
     idCategory: 'Baju Main',
+    searchKeyword: ['3', 'Seconds'],
     createdAt: Timestamp.now(),
   ),
   ProductModel(
@@ -79,6 +113,7 @@ final productData = [
     price: 50000,
     allStock: 80,
     idCategory: 'Apa tah apa',
+    searchKeyword: ['3', 'Seconds'],
     createdAt: Timestamp.now(),
   ),
   ProductModel(
@@ -86,6 +121,7 @@ final productData = [
     price: 50000,
     allStock: 80,
     idCategory: 'Ntah',
+    searchKeyword: ['3', 'Seconds'],
     createdAt: Timestamp.now(),
   )
 ];

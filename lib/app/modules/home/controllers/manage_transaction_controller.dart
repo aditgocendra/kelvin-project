@@ -96,6 +96,7 @@ class ManageTransactionController extends GetxController {
       price: resultProduct.get('price'),
       allStock: resultProduct.get('allStock'),
       idCategory: resultProduct.get('idCategory'),
+      searchKeyword: List<String>.from(resultProduct.get('searchKeyword')),
       createdAt: resultProduct.get('createdAt'),
     );
     product.idDocument = codeProduct;
