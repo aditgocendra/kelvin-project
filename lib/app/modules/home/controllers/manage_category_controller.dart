@@ -7,6 +7,8 @@ import 'package:kelvin_project/services/firebase/firestore.service.dart';
 class ManageCategoryController extends GetxController {
   final isLoading = false.obs;
 
+  // Controller
+  ScrollController scrollHorizontalTable = ScrollController();
   TextEditingController nameTec = TextEditingController();
 
   List<CategoryModel> listCategory = [];

@@ -1,3 +1,4 @@
+import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -5,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/globals/styles.dart';
 import 'package:kelvin_project/app/modules/home/controllers/manage_transaction_controller.dart';
-import 'package:kelvin_project/services/local/pdf_services.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:unicons/unicons.dart';
 
@@ -40,7 +41,11 @@ class ManageTransaction extends StatelessWidget {
                       children: [
                         InkWell(
                           onTap: () {
-                            PdfService.buildPdf(false);
+                            mTransactionCtl.errorMessageReport.value = '';
+                            showDialog(
+                              context: context,
+                              builder: (context) => DialogPdfReport(),
+                            );
                           },
                           child: Container(
                             decoration: const BoxDecoration(
@@ -136,7 +141,7 @@ class ManageTransaction extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: () {
-                        PdfService.buildPdf(false);
+                        // PdfService.buildPdf(false);
                       },
                       child: Container(
                         decoration: const BoxDecoration(
@@ -294,8 +299,12 @@ class DialogFormTransaction extends StatelessWidget {
                   Obx(
                     () {
                       if (mTransactionCtl.isLoadingGetProduct.value) {
-                        return const CircularProgressIndicator();
+                        return LoadingAnimationWidget.inkDrop(
+                          color: primaryColor,
+                          size: 40,
+                        );
                       }
+
                       return IconButton(
                         onPressed: () {
                           mTransactionCtl.addFormProduct();
@@ -555,6 +564,113 @@ class DialogDetailTransaction extends StatelessWidget {
   }
 }
 
+class DialogPdfReport extends StatelessWidget {
+  final mTransactionCtl = Get.find<ManageTransactionController>();
+  DialogPdfReport({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(16),
+        ),
+      ),
+      elevation: 0.5,
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: 800,
+        padding: const EdgeInsets.all(32.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(
+            Radius.circular(16),
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Buat Laporan',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Get.back();
+                    },
+                    icon: const Icon(
+                      UniconsLine.times_circle,
+                      color: primaryColor,
+                    ),
+                  )
+                ],
+              ),
+              const SizedBox(
+                height: 16,
+              ),
+              CalendarDatePicker2(
+                config: CalendarDatePicker2Config(
+                  calendarType: CalendarDatePicker2Type.range,
+                  selectedDayHighlightColor: primaryColor,
+                ),
+                onValueChanged: (dates) {
+                  mTransactionCtl.datePickRangeTrans = dates;
+                },
+                initialValue: mTransactionCtl.initRangeDatePicker,
+              ),
+              Obx(
+                () => Text(
+                  mTransactionCtl.errorMessageReport.value,
+                  style: const TextStyle(fontSize: 14, color: Colors.redAccent),
+                ),
+              ),
+              const SizedBox(
+                height: 12,
+              ),
+              Obx(
+                () {
+                  if (mTransactionCtl.isLoadingReportPdf.value) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 80),
+                      child: LoadingAnimationWidget.staggeredDotsWave(
+                        color: primaryColor,
+                        size: 50,
+                      ),
+                    );
+                  }
+                  return ElevatedButton(
+                    onPressed: () {
+                      mTransactionCtl.generatePdfTransaction();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      primary: primaryColor,
+                      elevation: 0.5,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(10),
+                        ),
+                      ),
+                      minimumSize: const Size.fromHeight(50),
+                    ),
+                    child: const Text(
+                      'Cetak Laporan',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  );
+                },
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class FormProductTransaction extends StatelessWidget {
   final mTransactionCtl = Get.find<ManageTransactionController>();
   int indexProduct;
@@ -767,173 +883,179 @@ class TransactionTable extends StatelessWidget {
                 );
               }
 
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  dataRowHeight: 90,
-                  columns: const [
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Nomor'),
+              return Scrollbar(
+                controller: mTransactionCtl.scrollHorizontalTable,
+                child: SingleChildScrollView(
+                  controller: mTransactionCtl.scrollHorizontalTable,
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    dataRowHeight: 90,
+                    columns: const [
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Nomor'),
+                          ),
                         ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Kode Transaksi'),
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Kode Transaksi'),
+                          ),
                         ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Total Pembayaran'),
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Total Pembayaran'),
+                          ),
                         ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Aksi'),
-                        ),
-                      ),
-                    )
-                  ],
-                  rows: mTransactionCtl.listDataTable
-                      .asMap()
-                      .map(
-                        (index, value) => MapEntry(
-                          index,
-                          DataRow(
-                            cells: [
-                              DataCell(
-                                SizedBox(
-                                  width: constraints.maxWidth / 7,
-                                  child: Center(
-                                    child: Text(
-                                      (index + 1).toString(),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                SizedBox(
-                                  width: constraints.maxWidth / 4,
-                                  child: Center(
-                                    child: Text(
-                                      value.idDocument!,
-                                      maxLines: 3,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                SizedBox(
-                                  width: constraints.maxWidth / 5,
-                                  child: Center(
-                                    child: Text(
-                                      NumberFormat.currency(
-                                        locale: 'id',
-                                        symbol: 'Rp. ',
-                                        decimalDigits: 0,
-                                      ).format(value.totalPay),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                SizedBox(
-                                  width: screenSize > 450
-                                      ? constraints.maxWidth / 4
-                                      : constraints.maxWidth / 3,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      InkWell(
-                                        onTap: () {
-                                          mTransactionCtl
-                                              .setDialogDetailTransaction(
-                                            value,
-                                          );
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) =>
-                                                DialogDetailTransaction(),
-                                          );
-                                        },
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(12),
-                                        ),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: const BoxDecoration(
-                                            color: primaryColor,
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(8),
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            UniconsLine.eye,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      ),
-                                      InkWell(
-                                        onTap: () {
-                                          Get.defaultDialog(
-                                            contentPadding:
-                                                const EdgeInsets.all(32),
-                                            title: 'Hapus Transaksi',
-                                            middleText:
-                                                'Apakah kamu yakin ingin menghapus transaksi ini ?',
-                                            textConfirm: 'Ya',
-                                            textCancel: 'Tidak',
-                                            buttonColor: primaryColor,
-                                            confirmTextColor: Colors.white,
-                                            cancelTextColor: primaryColor,
-                                            onConfirm: () {
-                                              mTransactionCtl.deleteTransaction(
-                                                  value.idDocument!);
-                                            },
-                                            onCancel: () => Get.back(),
-                                          );
-                                        },
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(12),
-                                        ),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: const BoxDecoration(
-                                            color: primaryColor,
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(8),
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            UniconsLine.trash_alt,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Aksi'),
                           ),
                         ),
                       )
-                      .values
-                      .toList(),
+                    ],
+                    rows: mTransactionCtl.listDataTable
+                        .asMap()
+                        .map(
+                          (index, value) => MapEntry(
+                            index,
+                            DataRow(
+                              cells: [
+                                DataCell(
+                                  SizedBox(
+                                    width: constraints.maxWidth / 7,
+                                    child: Center(
+                                      child: Text(
+                                        (index + 1).toString(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: constraints.maxWidth / 4,
+                                    child: Center(
+                                      child: Text(
+                                        value.idDocument!,
+                                        maxLines: 3,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: constraints.maxWidth / 5,
+                                    child: Center(
+                                      child: Text(
+                                        NumberFormat.currency(
+                                          locale: 'id',
+                                          symbol: 'Rp. ',
+                                          decimalDigits: 0,
+                                        ).format(value.totalPay),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: screenSize > 450
+                                        ? constraints.maxWidth / 4
+                                        : constraints.maxWidth / 2,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            mTransactionCtl
+                                                .setDialogDetailTransaction(
+                                              value,
+                                            );
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) =>
+                                                  DialogDetailTransaction(),
+                                            );
+                                          },
+                                          borderRadius: const BorderRadius.all(
+                                            Radius.circular(12),
+                                          ),
+                                          child: Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: const BoxDecoration(
+                                              color: primaryColor,
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(8),
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              UniconsLine.eye,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            Get.defaultDialog(
+                                              contentPadding:
+                                                  const EdgeInsets.all(32),
+                                              title: 'Hapus Transaksi',
+                                              middleText:
+                                                  'Apakah kamu yakin ingin menghapus transaksi ini ?',
+                                              textConfirm: 'Ya',
+                                              textCancel: 'Tidak',
+                                              buttonColor: primaryColor,
+                                              confirmTextColor: Colors.white,
+                                              cancelTextColor: primaryColor,
+                                              onConfirm: () {
+                                                mTransactionCtl
+                                                    .deleteTransaction(
+                                                        value.idDocument!);
+                                              },
+                                              onCancel: () => Get.back(),
+                                            );
+                                          },
+                                          borderRadius: const BorderRadius.all(
+                                            Radius.circular(12),
+                                          ),
+                                          child: Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: const BoxDecoration(
+                                              color: primaryColor,
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(8),
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              UniconsLine.trash_alt,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        )
+                        .values
+                        .toList(),
+                  ),
                 ),
               );
             },

@@ -638,235 +638,241 @@ class UsersTable extends StatelessWidget {
                 );
               }
 
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  dataRowHeight: 70,
-                  columns: const [
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Nomor'),
+              return Scrollbar(
+                controller: mUsersController.scrollHorizontalTable,
+                child: SingleChildScrollView(
+                  controller: mUsersController.scrollHorizontalTable,
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    dataRowHeight: 70,
+                    columns: const [
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Nomor'),
+                          ),
                         ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Email'),
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Email'),
+                          ),
                         ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Nama Pengguna'),
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Nama Pengguna'),
+                          ),
                         ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Peran Pengguna'),
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Peran Pengguna'),
+                          ),
                         ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Aksi'),
-                        ),
-                      ),
-                    )
-                  ],
-                  rows: mUsersController.listUsers
-                      .asMap()
-                      .map(
-                        (index, value) => MapEntry(
-                          index,
-                          DataRow(
-                            cells: [
-                              DataCell(
-                                SizedBox(
-                                  width: constraints.maxWidth / 10,
-                                  child: Center(
-                                    child: Text(
-                                      (index + 1).toString(),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                SizedBox(
-                                  width: constraints.maxWidth / 6,
-                                  child: Center(
-                                    child: Text(
-                                      value.email,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                SizedBox(
-                                  width: constraints.maxWidth / 6,
-                                  child: Center(
-                                    child: Text(
-                                      value.username,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                SizedBox(
-                                  width: constraints.maxWidth / 5,
-                                  child: Center(
-                                    child: Text(
-                                      value.role,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                SizedBox(
-                                  width: screenSize > 550
-                                      ? constraints.maxWidth / 5
-                                      : constraints.maxWidth / 3,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const SizedBox(
-                                        width: 8,
-                                      ),
-                                      InkWell(
-                                        onTap: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) =>
-                                                DialogFormEditUsers(
-                                              user: value,
-                                            ),
-                                          );
-                                        },
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(12),
-                                        ),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: const BoxDecoration(
-                                            color: primaryColor,
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(8),
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            UniconsLine.edit,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      ),
-                                      InkWell(
-                                        onTap: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) =>
-                                                DialogFormResetPassword(
-                                              user: value,
-                                            ),
-                                          );
-                                        },
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(12),
-                                        ),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: const BoxDecoration(
-                                            color: primaryColor,
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(8),
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            UniconsLine.key_skeleton,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      ),
-                                      InkWell(
-                                        onTap: () {
-                                          if (value.role == 'Super Admin') {
-                                            Get.defaultDialog(
-                                              contentPadding:
-                                                  const EdgeInsets.all(32),
-                                              title: 'Super Admin',
-                                              middleText:
-                                                  'Akun ini tidak dapat dihapus',
-                                              textConfirm: 'Ok',
-                                              buttonColor: primaryColor,
-                                              confirmTextColor: Colors.white,
-                                              onConfirm: () {
-                                                Get.back();
-                                              },
-                                            );
-                                            return;
-                                          }
-                                          Get.defaultDialog(
-                                            contentPadding:
-                                                const EdgeInsets.all(32),
-                                            title: 'Hapus Pengguna',
-                                            middleText:
-                                                'Apakah kamu yakin ingin menghapus pengguna ini ?',
-                                            textConfirm: 'Ya',
-                                            textCancel: 'Tidak',
-                                            buttonColor: primaryColor,
-                                            confirmTextColor: Colors.white,
-                                            cancelTextColor: primaryColor,
-                                            onConfirm: () {
-                                              mUsersController.deleteUser(
-                                                value.idDocument!,
-                                              );
-                                            },
-                                            onCancel: () => Get.back(),
-                                          );
-                                        },
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(12),
-                                        ),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: const BoxDecoration(
-                                            color: primaryColor,
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(8),
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            UniconsLine.trash_alt,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Aksi'),
                           ),
                         ),
                       )
-                      .values
-                      .toList(),
+                    ],
+                    rows: mUsersController.listUsers
+                        .asMap()
+                        .map(
+                          (index, value) => MapEntry(
+                            index,
+                            DataRow(
+                              cells: [
+                                DataCell(
+                                  SizedBox(
+                                    width: constraints.maxWidth / 10,
+                                    child: Center(
+                                      child: Text(
+                                        (index + 1).toString(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: constraints.maxWidth / 6,
+                                    child: Center(
+                                      child: Text(
+                                        value.email,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: constraints.maxWidth / 6,
+                                    child: Center(
+                                      child: Text(
+                                        value.username,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: constraints.maxWidth / 5,
+                                    child: Center(
+                                      child: Text(
+                                        value.role,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    // width: constraints.maxWidth / 6.2,
+                                    width: screenSize > 720
+                                        ? constraints.maxWidth / 6.2
+                                        : constraints.maxWidth / 1.5,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) =>
+                                                  DialogFormEditUsers(
+                                                user: value,
+                                              ),
+                                            );
+                                          },
+                                          borderRadius: const BorderRadius.all(
+                                            Radius.circular(12),
+                                          ),
+                                          child: Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: const BoxDecoration(
+                                              color: primaryColor,
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(8),
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              UniconsLine.edit,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) =>
+                                                  DialogFormResetPassword(
+                                                user: value,
+                                              ),
+                                            );
+                                          },
+                                          borderRadius: const BorderRadius.all(
+                                            Radius.circular(12),
+                                          ),
+                                          child: Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: const BoxDecoration(
+                                              color: primaryColor,
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(8),
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              UniconsLine.key_skeleton,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            if (value.role == 'Super Admin') {
+                                              Get.defaultDialog(
+                                                contentPadding:
+                                                    const EdgeInsets.all(32),
+                                                title: 'Super Admin',
+                                                middleText:
+                                                    'Akun ini tidak dapat dihapus',
+                                                textConfirm: 'Ok',
+                                                buttonColor: primaryColor,
+                                                confirmTextColor: Colors.white,
+                                                onConfirm: () {
+                                                  Get.back();
+                                                },
+                                              );
+                                              return;
+                                            }
+                                            Get.defaultDialog(
+                                              contentPadding:
+                                                  const EdgeInsets.all(32),
+                                              title: 'Hapus Pengguna',
+                                              middleText:
+                                                  'Apakah kamu yakin ingin menghapus pengguna ini ?',
+                                              textConfirm: 'Ya',
+                                              textCancel: 'Tidak',
+                                              buttonColor: primaryColor,
+                                              confirmTextColor: Colors.white,
+                                              cancelTextColor: primaryColor,
+                                              onConfirm: () {
+                                                mUsersController.deleteUser(
+                                                  value.idDocument!,
+                                                );
+                                              },
+                                              onCancel: () => Get.back(),
+                                            );
+                                          },
+                                          borderRadius: const BorderRadius.all(
+                                            Radius.circular(12),
+                                          ),
+                                          child: Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: const BoxDecoration(
+                                              color: primaryColor,
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(8),
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              UniconsLine.trash_alt,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        )
+                        .values
+                        .toList(),
+                  ),
                 ),
               );
             },

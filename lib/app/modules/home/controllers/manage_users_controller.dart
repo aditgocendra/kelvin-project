@@ -18,6 +18,7 @@ class ManageUsersController extends GetxController {
   final errorMessageFormChangePass = ''.obs;
 
   // Text Editing Controller Add User
+  ScrollController scrollHorizontalTable = ScrollController();
   TextEditingController usernameAddTec = TextEditingController();
   TextEditingController emailAddTec = TextEditingController();
   TextEditingController passAddTec = TextEditingController();
