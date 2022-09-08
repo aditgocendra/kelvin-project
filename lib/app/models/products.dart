@@ -7,6 +7,7 @@ class ProductModel {
   String idCategory;
   int price;
   int allStock;
+  int sold;
   Timestamp createdAt;
   List<String>? searchKeyword;
   String? idDocument;
@@ -16,6 +17,7 @@ class ProductModel {
     required this.price,
     required this.allStock,
     required this.idCategory,
+    required this.sold,
     required this.createdAt,
     required this.searchKeyword,
   });
@@ -30,6 +32,7 @@ class ProductModel {
       idCategory: data?['idCategory'],
       price: data?['price'],
       allStock: data?['allStock'],
+      sold: data?['sold'],
       createdAt: data?['createdAt'],
       searchKeyword: data?['searchKeyword'] is Iterable
           ? List.from(data?['searchKeyword'])
@@ -43,6 +46,7 @@ class ProductModel {
       "idCategory": idCategory,
       "price": price,
       "allStock": allStock,
+      "sold": sold,
       "createdAt": createdAt,
       if (searchKeyword != null) "searchKeyword": searchKeyword,
     };
@@ -71,6 +75,7 @@ final productData = [
     productName: '3 Seconds Bundle',
     price: 50000,
     allStock: 80,
+    sold: 0,
     idCategory: 'Bundaran',
     searchKeyword: ['3', 'Seconds'],
     createdAt: Timestamp.now(),
@@ -79,6 +84,7 @@ final productData = [
     productName: 'Tersesiuds',
     price: 50000,
     allStock: 80,
+    sold: 0,
     idCategory: 'Baju Tidur',
     searchKeyword: ['3', 'Seconds'],
     createdAt: Timestamp.now(),
@@ -87,6 +93,7 @@ final productData = [
     productName: 'Black Market',
     price: 50000,
     allStock: 80,
+    sold: 0,
     idCategory: 'Baju Main',
     searchKeyword: ['3', 'Seconds'],
     createdAt: Timestamp.now(),
@@ -95,6 +102,7 @@ final productData = [
     productName: 'Ntah Apa ini',
     price: 50000,
     allStock: 80,
+    sold: 0,
     idCategory: 'Apa tah apa',
     searchKeyword: ['3', 'Seconds'],
     createdAt: Timestamp.now(),
@@ -103,6 +111,7 @@ final productData = [
     productName: 'Ntah Apa ini',
     price: 50000,
     allStock: 80,
+    sold: 0,
     idCategory: 'Ntah',
     searchKeyword: ['3', 'Seconds'],
     createdAt: Timestamp.now(),
