@@ -98,6 +98,7 @@ class ManageProductController extends GetxController {
       productName: nameProduct,
       price: int.parse(price),
       allStock: allStock,
+      sold: 0,
       idCategory: idCategorySelected!,
       createdAt: FirestoreService.timeStamp,
       searchKeyword: generateSearchKeyword(sentence: nameProduct),
@@ -211,6 +212,7 @@ class ManageProductController extends GetxController {
     return true;
   }
 
+  // Generate Search Keyword
   List<String> generateSearchKeyword({required String sentence}) {
     String clearSymbol = sentence.replaceAll(RegExp(r"[^\s\w]"), '');
     String clear2WhiteSpace = clearSymbol.replaceAll('  ', ' ');
@@ -242,6 +244,7 @@ class ManageProductController extends GetxController {
         price: doc['price'],
         allStock: doc['allStock'],
         idCategory: doc['idCategory'],
+        sold: doc['sold'],
         createdAt: doc['createdAt'],
         searchKeyword: List<String>.from(doc['searchKeyword']),
       );
