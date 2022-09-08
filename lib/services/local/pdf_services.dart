@@ -2,7 +2,9 @@
 import 'dart:html';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:kelvin_project/app/models/products.dart';
+import 'package:kelvin_project/app/models/transaction.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
@@ -11,8 +13,10 @@ class PdfService {
   // content false = transaction
 
   static String? logo;
+  static String? dateHeader;
 
-  static Future buildPdf(bool content) async {
+  static Future buildPdf(bool content, dynamic data, String date) async {
+    dateHeader = date;
     final doc = pw.Document();
 
     logo = await rootBundle
@@ -38,8 +42,8 @@ class PdfService {
         build: (context) => [
           // contentHeader(context),
           content
-              ? contentTableProduct(context)
-              : contentTableTransaction(context)
+              ? contentTableProduct(context, data)
+              : contentTableTransaction(context, data)
         ],
       ),
     );
@@ -89,10 +93,12 @@ class PdfService {
     );
   }
 
-  static pw.Widget contentTableProduct(pw.Context context) {
+  static pw.Widget contentTableProduct(
+    pw.Context context,
+    List<ProductModel> listProduct,
+  ) {
     const tableHeaders = [
       'Nama Produk',
-      'Kategori',
       'Harga',
       'Semua Stok',
     ];
@@ -102,7 +108,7 @@ class PdfService {
       cellAlignment: pw.Alignment.centerLeft,
       headerDecoration: const pw.BoxDecoration(
         borderRadius: pw.BorderRadius.all(pw.Radius.circular(2)),
-        color: PdfColors.pink400,
+        color: PdfColors.green500,
       ),
       headerHeight: 25,
       cellHeight: 40,
@@ -110,7 +116,6 @@ class PdfService {
         0: pw.Alignment.centerLeft,
         1: pw.Alignment.center,
         2: pw.Alignment.center,
-        3: pw.Alignment.center,
       },
       headerStyle: pw.TextStyle(
         color: PdfColors.white,
@@ -124,7 +129,7 @@ class PdfService {
       rowDecoration: const pw.BoxDecoration(
         border: pw.Border(
           bottom: pw.BorderSide(
-            color: PdfColors.pink500,
+            color: PdfColors.green500,
             width: .5,
           ),
         ),
@@ -134,10 +139,10 @@ class PdfService {
         (col) => tableHeaders[col],
       ),
       data: List<List<String>>.generate(
-        productData.length,
+        listProduct.length,
         (row) => List<String>.generate(
           tableHeaders.length,
-          (col) => productData[row].getIndex(col),
+          (col) => listProduct[row].getIndex(col),
         ),
       ),
     );
@@ -145,6 +150,7 @@ class PdfService {
 
   static pw.Widget buildHeaderTransaction(pw.Context context) {
     return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
       children: [
         pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -158,1057 +164,240 @@ class PdfService {
             ),
           ],
         ),
+        pw.Text('Periode : $dateHeader',
+            style: const pw.TextStyle(fontSize: 10),
+            textAlign: pw.TextAlign.right),
+        pw.SizedBox(height: 16),
         // Header Table
-        pw.Row(
-          children: [
-            pw.Expanded(
-              child: dataCellCustom(
-                'Kode Transaksi',
-                pw.FontWeight.bold,
+        pw.Container(
+          padding: const pw.EdgeInsets.symmetric(vertical: 8),
+          decoration: const pw.BoxDecoration(
+            border: pw.Border(
+              top: pw.BorderSide(
+                width: 1.0,
+                color: PdfColors.green400,
+              ),
+              bottom: pw.BorderSide(
+                width: 1.0,
+                color: PdfColors.green400,
               ),
             ),
-            pw.Expanded(
-              child: dataCellCustom(
-                'Produk',
-                pw.FontWeight.bold,
-              ),
-            ),
-            pw.Expanded(
-              child: dataCellCustom(
-                'Varian',
-                pw.FontWeight.bold,
-              ),
-            ),
-            pw.Expanded(
-              child: dataCellCustom(
-                'Harga',
-                pw.FontWeight.bold,
-              ),
-            ),
-            pw.Expanded(
-              child: dataCellCustom(
-                'Jumlah Pembelian',
-                pw.FontWeight.bold,
-              ),
-            ),
-            pw.Expanded(
-              child: dataCellCustom(
-                'Tanggal Transaksi',
-                pw.FontWeight.bold,
-              ),
-            ),
-            pw.Expanded(
-              child: dataCellCustom(
-                'Total Pembayaran',
-                pw.FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  static pw.Widget contentTableTransaction(pw.Context context) {
-    return pw.Column(
-      children: [
-        // Data Table
-        pw.Row(
-          children: [
-            // Kode Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                'TR-KL-2022-15-05-WBDHABHSBDHW',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Product
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.all(4),
-                child: pw.Column(
-                  children: [
-                    dataCellCustom(
-                      'Baju 3 Seconds',
-                      pw.FontWeight.normal,
-                    ),
-                    dataCellCustom(
-                      'Baju Emak Emak',
-                      pw.FontWeight.normal,
-                    ),
-                  ],
+          ),
+          child: pw.Row(
+            children: [
+              pw.Expanded(
+                child: dataCellCustom(
+                  'Kode Transaksi',
+                  pw.FontWeight.bold,
                 ),
               ),
-            ),
-            // Varian
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.only(bottom: 4),
-                child: pw.Column(
-                  children: [
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Merah | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Pink | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.only(bottom: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Putih | M',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Merah | L',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              pw.Expanded(
+                child: dataCellCustom(
+                  'Produk',
+                  pw.FontWeight.bold,
                 ),
               ),
-            ),
-            // Harga
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp. 300.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Total Item Buy
-            pw.Expanded(
-              child: dataCellCustom(
-                '4 Unit',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Date Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                '24 Mar 2022',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Price Item
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp.540.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-        pw.Row(
-          children: [
-            // Kode Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                'TR-KL-2022-15-05-WBDHABHSBDHW',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Product
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.all(4),
-                child: pw.Column(
-                  children: [
-                    dataCellCustom(
-                      'Baju 3 Seconds',
-                      pw.FontWeight.normal,
-                    ),
-                    dataCellCustom(
-                      'Baju Emak Emak',
-                      pw.FontWeight.normal,
-                    ),
-                  ],
+              pw.Expanded(
+                child: dataCellCustom(
+                  'Varian',
+                  pw.FontWeight.bold,
                 ),
               ),
-            ),
-            // Varian
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.only(bottom: 4),
-                child: pw.Column(
-                  children: [
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Merah | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Pink | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.only(bottom: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Putih | M',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Merah | L',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              pw.Expanded(
+                child: dataCellCustom(
+                  'Harga',
+                  pw.FontWeight.bold,
                 ),
               ),
-            ),
-            // Harga
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp. 300.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Total Item Buy
-            pw.Expanded(
-              child: dataCellCustom(
-                '4 Unit',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Date Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                '24 Mar 2022',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Price Item
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp.540.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-        pw.Row(
-          children: [
-            // Kode Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                'TR-KL-2022-15-05-WBDHABHSBDHW',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Product
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.all(4),
-                child: pw.Column(
-                  children: [
-                    dataCellCustom(
-                      'Baju 3 Seconds',
-                      pw.FontWeight.normal,
-                    ),
-                    dataCellCustom(
-                      'Baju Emak Emak',
-                      pw.FontWeight.normal,
-                    ),
-                  ],
+              pw.Expanded(
+                child: dataCellCustom(
+                  'Jumlah Pembelian',
+                  pw.FontWeight.bold,
                 ),
               ),
-            ),
-            // Varian
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.only(bottom: 4),
-                child: pw.Column(
-                  children: [
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Merah | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Pink | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.only(bottom: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Putih | M',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Merah | L',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              pw.Expanded(
+                child: dataCellCustom(
+                  'Tanggal Transaksi',
+                  pw.FontWeight.bold,
                 ),
               ),
-            ),
-            // Harga
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp. 300.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Total Item Buy
-            pw.Expanded(
-              child: dataCellCustom(
-                '4 Unit',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Date Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                '24 Mar 2022',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Price Item
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp.540.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-        pw.Row(
-          children: [
-            // Kode Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                'TR-KL-2022-15-05-WBDHABHSBDHW',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Product
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.all(4),
-                child: pw.Column(
-                  children: [
-                    dataCellCustom(
-                      'Baju 3 Seconds',
-                      pw.FontWeight.normal,
-                    ),
-                    dataCellCustom(
-                      'Baju Emak Emak',
-                      pw.FontWeight.normal,
-                    ),
-                  ],
+              pw.Expanded(
+                child: dataCellCustom(
+                  'Total Pembayaran',
+                  pw.FontWeight.bold,
                 ),
               ),
-            ),
-            // Varian
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.only(bottom: 4),
-                child: pw.Column(
-                  children: [
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Merah | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Pink | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.only(bottom: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Putih | M',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Merah | L',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Harga
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp. 300.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Total Item Buy
-            pw.Expanded(
-              child: dataCellCustom(
-                '4 Unit',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Date Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                '24 Mar 2022',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Price Item
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp.540.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-        pw.Row(
-          children: [
-            // Kode Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                'TR-KL-2022-15-05-WBDHABHSBDHW',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Product
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.all(4),
-                child: pw.Column(
-                  children: [
-                    dataCellCustom(
-                      'Baju 3 Seconds',
-                      pw.FontWeight.normal,
-                    ),
-                    dataCellCustom(
-                      'Baju Emak Emak',
-                      pw.FontWeight.normal,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Varian
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.only(bottom: 4),
-                child: pw.Column(
-                  children: [
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Merah | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Pink | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.only(bottom: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Putih | M',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Merah | L',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Harga
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp. 300.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Total Item Buy
-            pw.Expanded(
-              child: dataCellCustom(
-                '4 Unit',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Date Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                '24 Mar 2022',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Price Item
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp.540.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-        pw.Row(
-          children: [
-            // Kode Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                'TR-KL-2022-15-05-WBDHABHSBDHW',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Product
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.all(4),
-                child: pw.Column(
-                  children: [
-                    dataCellCustom(
-                      'Baju 3 Seconds',
-                      pw.FontWeight.normal,
-                    ),
-                    dataCellCustom(
-                      'Baju Emak Emak',
-                      pw.FontWeight.normal,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Varian
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.only(bottom: 4),
-                child: pw.Column(
-                  children: [
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Merah | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Pink | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.only(bottom: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Putih | M',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Merah | L',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Harga
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp. 300.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Total Item Buy
-            pw.Expanded(
-              child: dataCellCustom(
-                '4 Unit',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Date Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                '24 Mar 2022',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Price Item
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp.540.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-        pw.Row(
-          children: [
-            // Kode Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                'TR-KL-2022-15-05-WBDHABHSBDHW',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Product
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.all(4),
-                child: pw.Column(
-                  children: [
-                    dataCellCustom(
-                      'Baju 3 Seconds',
-                      pw.FontWeight.normal,
-                    ),
-                    dataCellCustom(
-                      'Baju Emak Emak',
-                      pw.FontWeight.normal,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Varian
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.only(bottom: 4),
-                child: pw.Column(
-                  children: [
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Merah | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Pink | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.only(bottom: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Putih | M',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Merah | L',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Harga
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp. 300.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Total Item Buy
-            pw.Expanded(
-              child: dataCellCustom(
-                '4 Unit',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Date Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                '24 Mar 2022',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Price Item
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp.540.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-        pw.Row(
-          children: [
-            // Kode Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                'TR-KL-2022-15-05-WBDHABHSBDHW',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Product
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.all(4),
-                child: pw.Column(
-                  children: [
-                    dataCellCustom(
-                      'Baju 3 Seconds',
-                      pw.FontWeight.normal,
-                    ),
-                    dataCellCustom(
-                      'Baju Emak Emak',
-                      pw.FontWeight.normal,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Varian
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.only(bottom: 4),
-                child: pw.Column(
-                  children: [
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Merah | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Pink | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.only(bottom: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Putih | M',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Merah | L',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Harga
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp. 300.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Total Item Buy
-            pw.Expanded(
-              child: dataCellCustom(
-                '4 Unit',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Date Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                '24 Mar 2022',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Price Item
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp.540.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-        pw.Row(
-          children: [
-            // Kode Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                'TR-KL-2022-15-05-WBDHABHSBDHW',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Product
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.all(4),
-                child: pw.Column(
-                  children: [
-                    dataCellCustom(
-                      'Baju 3 Seconds',
-                      pw.FontWeight.normal,
-                    ),
-                    dataCellCustom(
-                      'Baju Emak Emak',
-                      pw.FontWeight.normal,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Varian
-            pw.Expanded(
-              child: pw.Container(
-                padding: const pw.EdgeInsets.only(bottom: 4),
-                child: pw.Column(
-                  children: [
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Merah | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Pink | XL',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.only(bottom: 4),
-                      child: pw.Column(
-                        children: [
-                          pw.Text(
-                            'Putih | M',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                          pw.Text(
-                            'Merah | L',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                            ),
-                            textAlign: pw.TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Harga
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp. 300.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Total Item Buy
-            pw.Expanded(
-              child: dataCellCustom(
-                '4 Unit',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Date Transaction
-            pw.Expanded(
-              child: dataCellCustom(
-                '24 Mar 2022',
-                pw.FontWeight.normal,
-              ),
-            ),
-            // Price Item
-            pw.Expanded(
-              child: dataCellCustom(
-                'Rp.540.000',
-                pw.FontWeight.normal,
-              ),
-            ),
-          ],
+            ],
+          ),
         )
       ],
     );
   }
-}
 
-pw.Widget dataCellCustom(String text, pw.FontWeight fontWeight) {
-  return pw.Container(
-    padding: const pw.EdgeInsets.all(4),
-    child: pw.Text(
+  static pw.Widget contentTableTransaction(
+    pw.Context context,
+    List<TransactionReport> transactionReportData,
+  ) {
+    return pw.Column(children: [
+      pw.Column(
+        children: transactionReportData
+            .map(
+              (trans) => pw.Container(
+                margin: const pw.EdgeInsets.only(top: 8),
+                decoration: const pw.BoxDecoration(
+                  border: pw.Border(
+                    bottom: pw.BorderSide(
+                      width: 1.0,
+                      color: PdfColors.green400,
+                    ),
+                  ),
+                ),
+                child: pw.Row(
+                  children: [
+                    // Code Transaction
+                    pw.Expanded(
+                      fit: pw.FlexFit.loose,
+                      child: pw.Container(
+                        child: dataCellCustom(
+                          trans.codeTransaction,
+                          pw.FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                    // Product
+                    pw.Expanded(
+                      child: pw.Column(
+                        mainAxisSize: pw.MainAxisSize.max,
+                        children: trans.detailTrans.map(
+                          (detailTrans) {
+                            return pw.Column(
+                              children: [
+                                pw.Container(
+                                  padding: pw.EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical:
+                                        (5.8 * detailTrans.variant!.length)
+                                            .toDouble(),
+                                  ),
+                                  child: dataCellCustom(
+                                    detailTrans.productName,
+                                    pw.FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ).toList(),
+                      ),
+                    ),
+                    // Varian
+                    pw.Expanded(
+                      child: pw.Column(
+                        children: trans.detailTrans.map(
+                          (detailTrans) {
+                            return pw.Container(
+                              padding: const pw.EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 5.5,
+                              ),
+                              child: pw.Column(
+                                children: detailTrans.variant!
+                                    .map(
+                                      (val) => dataCellCustom(
+                                        val,
+                                        pw.FontWeight.normal,
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
+                            );
+                          },
+                        ).toList(),
+                      ),
+                    ),
+                    // Harga
+                    pw.Expanded(
+                      child: pw.Column(
+                        children: trans.detailTrans
+                            .map(
+                              (detailTrans) => pw.Container(
+                                padding: pw.EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: (5.8 * detailTrans.variant!.length)
+                                      .toDouble(),
+                                ),
+                                child: dataCellCustom(
+                                  NumberFormat.currency(
+                                    locale: 'id',
+                                    symbol: 'Rp. ',
+                                    decimalDigits: 0,
+                                  ).format(
+                                    detailTrans.price,
+                                  ),
+                                  pw.FontWeight.normal,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ),
+                    // Total Item Buy
+                    pw.Expanded(
+                      child: pw.Column(
+                        children: trans.detailTrans
+                            .map(
+                              (val) => pw.Container(
+                                padding: pw.EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical:
+                                      (5.8 * val.variant!.length).toDouble(),
+                                ),
+                                child: dataCellCustom(
+                                  '${val.variant!.length} Unit',
+                                  pw.FontWeight.normal,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ),
+                    // Date Transaction
+                    pw.Expanded(
+                      child: dataCellCustom(
+                        DateFormat.yMd().format(trans.dateTransaction.toDate()),
+                        pw.FontWeight.normal,
+                      ),
+                    ),
+                    // Price Item
+                    pw.Expanded(
+                      child: dataCellCustom(
+                        NumberFormat.currency(
+                          locale: 'id',
+                          symbol: 'Rp. ',
+                          decimalDigits: 0,
+                        ).format(
+                          trans.totalPay,
+                        ),
+                        pw.FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      )
+    ]);
+  }
+
+  static pw.Widget dataCellCustom(String text, pw.FontWeight fontWeight) {
+    return pw.Text(
       text,
       style: pw.TextStyle(
         fontSize: 9,
         fontWeight: fontWeight,
       ),
       textAlign: pw.TextAlign.center,
-    ),
-  );
+    );
+  }
 }

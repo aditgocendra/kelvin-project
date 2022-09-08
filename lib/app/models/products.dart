@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 // Note : All stock is obtained from the sum of all product variants
 class ProductModel {
@@ -47,36 +48,18 @@ class ProductModel {
     };
   }
 
-  // ProductModel.fromJson(Map<String, Object?> json)
-  //     : this(
-  //         productName: json['name']! as String,
-  //         idCategory: json['idCategory']! as String,
-  //         price: json['price']! as int,
-  //         allStock: json['allStock']! as int,
-  //         createdAt: json['createdAt']! as Timestamp,
-
-  //       );
-
-  // Map<String, Object?> toJson() {
-  //   return {
-  //     'productName': productName,
-  //     'price': price,
-  //     'allStock': allStock,
-  //     'idCategory': idCategory,
-  //     'createdAt': createdAt,
-  //   };
-  // }
-
   String getIndex(int index) {
     switch (index) {
       case 0:
         return productName;
       case 1:
-        return idCategory;
+        return NumberFormat.currency(
+          locale: 'id',
+          symbol: 'Rp. ',
+          decimalDigits: 0,
+        ).format(price);
       case 2:
-        return price.toString();
-      case 3:
-        return allStock.toString();
+        return '$allStock Unit';
       default:
         return '';
     }

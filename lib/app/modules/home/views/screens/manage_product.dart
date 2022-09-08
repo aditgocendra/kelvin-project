@@ -44,7 +44,11 @@ class ManageProduct extends StatelessWidget {
                       children: [
                         InkWell(
                           onTap: () {
-                            PdfService.buildPdf(true);
+                            if (mProductController.listProduct.isEmpty) {
+                              return;
+                            }
+                            PdfService.buildPdf(
+                                true, mProductController.listProduct, '');
                           },
                           child: Container(
                             decoration: const BoxDecoration(
@@ -159,7 +163,7 @@ class ManageProduct extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: () {
-                        PdfService.buildPdf(true);
+                        PdfService.buildPdf(true, productData, 'date');
                       },
                       child: Container(
                         decoration: const BoxDecoration(
