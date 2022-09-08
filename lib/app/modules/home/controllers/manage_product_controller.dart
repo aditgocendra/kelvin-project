@@ -18,6 +18,7 @@ class ManageProductController extends GetxController {
   CategoryModel? ctgDetailProduct;
 
   // Controller
+  ScrollController scrollHorizontalTable = ScrollController();
   TextEditingController nameProductTec = TextEditingController();
   TextEditingController priceTec = TextEditingController();
   TextEditingController codeProductTec = TextEditingController();

@@ -285,151 +285,157 @@ class CategoryTable extends StatelessWidget {
                 );
               }
 
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  showCheckboxColumn: true,
-                  columns: const [
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Nomor'),
+              return Scrollbar(
+                controller: mCtgController.scrollHorizontalTable,
+                trackVisibility: true,
+                child: SingleChildScrollView(
+                  controller: mCtgController.scrollHorizontalTable,
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    showCheckboxColumn: true,
+                    columns: const [
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Nomor'),
+                          ),
                         ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Nama Kategori'),
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Nama Kategori'),
+                          ),
                         ),
                       ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Aksi'),
-                        ),
-                      ),
-                    )
-                  ],
-                  rows: mCtgController.listCategory
-                      .asMap()
-                      .map(
-                        (index, value) => MapEntry(
-                          index,
-                          DataRow(
-                            cells: [
-                              DataCell(
-                                SizedBox(
-                                  width: constraints.maxWidth / 6,
-                                  child: Center(
-                                    child: Text(
-                                      (index + 1).toString(),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                SizedBox(
-                                  width: constraints.maxWidth / 2,
-                                  child: Center(
-                                    child: Text(
-                                      value.name,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                SizedBox(
-                                  width: constraints.maxWidth / 4,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const SizedBox(
-                                        width: 8,
-                                      ),
-                                      InkWell(
-                                        onTap: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) =>
-                                                DialogFormCategory(
-                                              titleForm: 'Ubah Kategori',
-                                              name: value.name,
-                                              idDocument: value.idDocument,
-                                            ),
-                                          );
-                                        },
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(12),
-                                        ),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: const BoxDecoration(
-                                            color: primaryColor,
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(8),
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            UniconsLine.edit,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      ),
-                                      InkWell(
-                                        onTap: () {
-                                          Get.defaultDialog(
-                                            contentPadding:
-                                                const EdgeInsets.all(32),
-                                            title: 'Hapus Kategori',
-                                            middleText:
-                                                'Apakah kamu yakin ingin menghapus kategori ini ?',
-                                            textConfirm: 'Ya',
-                                            textCancel: 'Tidak',
-                                            buttonColor: primaryColor,
-                                            confirmTextColor: Colors.white,
-                                            cancelTextColor: primaryColor,
-                                            onConfirm: () =>
-                                                mCtgController.deleteCategory(
-                                                    value.idDocument!),
-                                            onCancel: () => Get.back(),
-                                          );
-                                        },
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(12),
-                                        ),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: const BoxDecoration(
-                                            color: primaryColor,
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(8),
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            UniconsLine.trash_alt,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Aksi'),
                           ),
                         ),
                       )
-                      .values
-                      .toList(),
+                    ],
+                    rows: mCtgController.listCategory
+                        .asMap()
+                        .map(
+                          (index, value) => MapEntry(
+                            index,
+                            DataRow(
+                              cells: [
+                                DataCell(
+                                  SizedBox(
+                                    width: constraints.maxWidth / 7.7,
+                                    child: Center(
+                                      child: Text(
+                                        (index + 1).toString(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: constraints.maxWidth / 2,
+                                    child: Center(
+                                      child: Text(
+                                        value.name,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: constraints.maxWidth / 4,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) =>
+                                                  DialogFormCategory(
+                                                titleForm: 'Ubah Kategori',
+                                                name: value.name,
+                                                idDocument: value.idDocument,
+                                              ),
+                                            );
+                                          },
+                                          borderRadius: const BorderRadius.all(
+                                            Radius.circular(12),
+                                          ),
+                                          child: Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: const BoxDecoration(
+                                              color: primaryColor,
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(8),
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              UniconsLine.edit,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            Get.defaultDialog(
+                                              contentPadding:
+                                                  const EdgeInsets.all(32),
+                                              title: 'Hapus Kategori',
+                                              middleText:
+                                                  'Apakah kamu yakin ingin menghapus kategori ini ?',
+                                              textConfirm: 'Ya',
+                                              textCancel: 'Tidak',
+                                              buttonColor: primaryColor,
+                                              confirmTextColor: Colors.white,
+                                              cancelTextColor: primaryColor,
+                                              onConfirm: () =>
+                                                  mCtgController.deleteCategory(
+                                                      value.idDocument!),
+                                              onCancel: () => Get.back(),
+                                            );
+                                          },
+                                          borderRadius: const BorderRadius.all(
+                                            Radius.circular(12),
+                                          ),
+                                          child: Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: const BoxDecoration(
+                                              color: primaryColor,
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(8),
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              UniconsLine.trash_alt,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        )
+                        .values
+                        .toList(),
+                  ),
                 ),
               );
             },

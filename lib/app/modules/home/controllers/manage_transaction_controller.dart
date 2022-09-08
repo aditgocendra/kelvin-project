@@ -33,8 +33,9 @@ class ManageTransactionController extends GetxController {
   final errorMessageForm = ''.obs;
   final errorMessageReport = ''.obs;
 
-  // Editing Controller
+  // Controller
   TextEditingController codeProductTec = TextEditingController();
+  ScrollController scrollHorizontalTable = ScrollController();
 
   // List Data
   List<Map<String, dynamic>> listProductForm = [];

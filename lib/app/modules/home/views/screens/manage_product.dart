@@ -890,229 +890,235 @@ class ProductTable extends StatelessWidget {
                 );
               }
 
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  dataRowHeight: 80,
-                  columns: const [
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Kode Produk'),
-                        ),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Produk'),
-                        ),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Harga'),
-                        ),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Stok Produk'),
-                        ),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Center(
-                          child: Text('Aksi'),
-                        ),
-                      ),
-                    )
-                  ],
-                  rows: mProductController.listProduct.map(
-                    (val) {
-                      return DataRow(
-                        cells: [
-                          DataCell(
-                            SizedBox(
-                              width: constraints.maxWidth / 7,
-                              child: Center(
-                                child: Text(val.idDocument!),
-                              ),
-                            ),
+              return Scrollbar(
+                controller: mProductController.scrollHorizontalTable,
+                trackVisibility: true,
+                child: SingleChildScrollView(
+                  controller: mProductController.scrollHorizontalTable,
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    dataRowHeight: 80,
+                    columns: const [
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Kode Produk'),
                           ),
-                          DataCell(
-                            SizedBox(
-                              width: constraints.maxWidth / 5,
-                              child: Center(
-                                child: Text(val.productName),
-                              ),
-                            ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Produk'),
                           ),
-                          DataCell(
-                            SizedBox(
-                              width: constraints.maxWidth / 6,
-                              child: Center(
-                                child: Text(
-                                  NumberFormat.currency(
-                                    locale: 'id',
-                                    symbol: 'Rp. ',
-                                    decimalDigits: 0,
-                                  ).format(val.price),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Harga'),
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Stok Produk'),
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Expanded(
+                          child: Center(
+                            child: Text('Aksi'),
+                          ),
+                        ),
+                      )
+                    ],
+                    rows: mProductController.listProduct.map(
+                      (val) {
+                        return DataRow(
+                          cells: [
+                            DataCell(
+                              SizedBox(
+                                width: constraints.maxWidth / 8,
+                                child: Center(
+                                  child: Text(val.idDocument!),
                                 ),
                               ),
                             ),
-                          ),
-                          DataCell(
-                            SizedBox(
-                              width: constraints.maxWidth / 10,
-                              child: Center(
-                                child: Text(val.allStock.toString()),
+                            DataCell(
+                              SizedBox(
+                                width: constraints.maxWidth / 5,
+                                child: Center(
+                                  child: Text(val.productName),
+                                ),
                               ),
                             ),
-                          ),
-                          DataCell(
-                            SizedBox(
-                              width: screenSize > 850
-                                  ? constraints.maxWidth / 5
-                                  : constraints.maxWidth / 2,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  InkWell(
-                                    onTap: () {
-                                      mProductController.getCategoryProduct(
-                                        val.idCategory,
-                                      );
-
-                                      mProductController.readVariantProduct(
-                                        val.idDocument!,
-                                      );
-
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return DialogVariantProduct(
-                                            product: val,
-                                          );
-                                        },
-                                      );
-                                    },
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(12),
-                                    ),
-                                    child: Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: const BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(8),
-                                        ),
-                                      ),
-                                      child: const Icon(
-                                        UniconsLine.eye,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                    ),
+                            DataCell(
+                              SizedBox(
+                                width: constraints.maxWidth / 7,
+                                child: Center(
+                                  child: Text(
+                                    NumberFormat.currency(
+                                      locale: 'id',
+                                      symbol: 'Rp. ',
+                                      decimalDigits: 0,
+                                    ).format(val.price),
                                   ),
-                                  const SizedBox(
-                                    width: 8,
-                                  ),
-                                  InkWell(
-                                    onTap: () async {
-                                      mProductController.resetEditingCtl();
-
-                                      await mProductController
-                                          .readVariantProduct(
-                                        val.idDocument!,
-                                      );
-
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return DialogFormProduct(
-                                            titleForm: 'Ubah Produk',
-                                            action: true,
-                                            codeProduct: val.idDocument,
-                                            nameProduct: val.productName,
-                                            price: val.price,
-                                          );
-                                        },
-                                      );
-                                    },
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(12),
-                                    ),
-                                    child: Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: const BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(8),
-                                        ),
-                                      ),
-                                      child: const Icon(
-                                        UniconsLine.edit,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    width: 8,
-                                  ),
-                                  InkWell(
-                                    onTap: () {
-                                      Get.defaultDialog(
-                                        contentPadding:
-                                            const EdgeInsets.all(32),
-                                        title: 'Hapus Produk',
-                                        middleText:
-                                            'Apakah kamu yakin ingin menghapus produk ini ?',
-                                        textConfirm: 'Ya',
-                                        textCancel: 'Tidak',
-                                        buttonColor: primaryColor,
-                                        confirmTextColor: Colors.white,
-                                        cancelTextColor: primaryColor,
-                                        onConfirm: () {
-                                          mProductController.deleteDataProduct(
-                                              val.idDocument!);
-                                        },
-                                        onCancel: () => Get.back(),
-                                      );
-                                    },
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(12),
-                                    ),
-                                    child: Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: const BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(8),
-                                        ),
-                                      ),
-                                      child: const Icon(
-                                        UniconsLine.trash_alt,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                    ),
-                                  )
-                                ],
+                                ),
                               ),
                             ),
-                          )
-                        ],
-                      );
-                    },
-                  ).toList(),
+                            DataCell(
+                              SizedBox(
+                                width: constraints.maxWidth / 10,
+                                child: Center(
+                                  child: Text(val.allStock.toString()),
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              SizedBox(
+                                width: screenSize > 630
+                                    ? constraints.maxWidth / 4.39
+                                    : constraints.maxWidth / 1.5,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        mProductController.getCategoryProduct(
+                                          val.idCategory,
+                                        );
+
+                                        mProductController.readVariantProduct(
+                                          val.idDocument!,
+                                        );
+
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return DialogVariantProduct(
+                                              product: val,
+                                            );
+                                          },
+                                        );
+                                      },
+                                      borderRadius: const BorderRadius.all(
+                                        Radius.circular(12),
+                                      ),
+                                      child: Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: const BoxDecoration(
+                                          color: primaryColor,
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(8),
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          UniconsLine.eye,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 8,
+                                    ),
+                                    InkWell(
+                                      onTap: () async {
+                                        mProductController.resetEditingCtl();
+
+                                        await mProductController
+                                            .readVariantProduct(
+                                          val.idDocument!,
+                                        );
+
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return DialogFormProduct(
+                                              titleForm: 'Ubah Produk',
+                                              action: true,
+                                              codeProduct: val.idDocument,
+                                              nameProduct: val.productName,
+                                              price: val.price,
+                                            );
+                                          },
+                                        );
+                                      },
+                                      borderRadius: const BorderRadius.all(
+                                        Radius.circular(12),
+                                      ),
+                                      child: Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: const BoxDecoration(
+                                          color: primaryColor,
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(8),
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          UniconsLine.edit,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 8,
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        Get.defaultDialog(
+                                          contentPadding:
+                                              const EdgeInsets.all(32),
+                                          title: 'Hapus Produk',
+                                          middleText:
+                                              'Apakah kamu yakin ingin menghapus produk ini ?',
+                                          textConfirm: 'Ya',
+                                          textCancel: 'Tidak',
+                                          buttonColor: primaryColor,
+                                          confirmTextColor: Colors.white,
+                                          cancelTextColor: primaryColor,
+                                          onConfirm: () {
+                                            mProductController
+                                                .deleteDataProduct(
+                                                    val.idDocument!);
+                                          },
+                                          onCancel: () => Get.back(),
+                                        );
+                                      },
+                                      borderRadius: const BorderRadius.all(
+                                        Radius.circular(12),
+                                      ),
+                                      child: Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: const BoxDecoration(
+                                          color: primaryColor,
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(8),
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          UniconsLine.trash_alt,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            )
+                          ],
+                        );
+                      },
+                    ).toList(),
+                  ),
                 ),
               );
             },
