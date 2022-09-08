@@ -67,7 +67,7 @@ class AdminPanel extends StatelessWidget {
                         content = const SearchProduct();
                         break;
                       default:
-                        content = const Dashboard();
+                        content = Dashboard();
                     }
                     return content;
                   },

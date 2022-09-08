@@ -163,7 +163,11 @@ class ManageProduct extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: () {
-                        PdfService.buildPdf(true, productData, 'date');
+                        if (mProductController.listProduct.isEmpty) {
+                          return;
+                        }
+                        PdfService.buildPdf(
+                            true, mProductController.listProduct, '');
                       },
                       child: Container(
                         decoration: const BoxDecoration(
@@ -791,6 +795,26 @@ class DialogVariantProduct extends StatelessWidget {
                     Expanded(
                       child: Text(
                         '${product.allStock} Unit',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Produk Terjual',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        '${product.sold} Unit',
                         style: const TextStyle(fontSize: 14),
                       ),
                     ),
