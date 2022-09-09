@@ -76,7 +76,7 @@ class AdminPanel extends StatelessWidget {
             ),
           ),
           // Rightbar
-          if (screenSize > 1060)
+          if (screenSize > 1100)
             const Expanded(
               child: Rightbar(),
             ),
