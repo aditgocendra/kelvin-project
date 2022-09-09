@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
 import 'package:kelvin_project/app/routes/app_pages.dart';
@@ -16,8 +17,8 @@ class Rightbar extends StatelessWidget {
       controller: ScrollController(),
       children: [
         User(),
-        const DayTime(),
-        const LastTransaction(),
+        DayTime(),
+        LastTransaction(),
       ],
     );
   }
@@ -28,7 +29,7 @@ class User extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  final controller = Get.find<HomeController>();
+  final homeController = Get.find<HomeController>();
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +62,7 @@ class User extends StatelessWidget {
           Obx(
             () {
               return Text(
-                controller.username.value,
+                homeController.username.value,
                 style: const TextStyle(
                   fontSize: 12,
                   color: Colors.black87,
@@ -117,7 +118,8 @@ class User extends StatelessWidget {
 }
 
 class DayTime extends StatelessWidget {
-  const DayTime({
+  final homeController = Get.find<HomeController>();
+  DayTime({
     Key? key,
   }) : super(key: key);
 
@@ -135,19 +137,23 @@ class DayTime extends StatelessWidget {
         ),
       ),
       child: Column(
-        children: const [
-          Text(
-            '22:32',
-            style: TextStyle(
-              fontSize: 40,
-              fontWeight: FontWeight.bold,
-              color: primaryColor,
-              height: 1,
+        children: [
+          Obx(
+            () => Text(
+              homeController.timeClock.value,
+              style: const TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: primaryColor,
+                height: 1,
+              ),
             ),
           ),
           Text(
-            'Senin, 27 Mar 2022',
-            style: TextStyle(
+            DateFormat('EEEE, d MMM y', 'id').format(
+              DateTime.now(),
+            ),
+            style: const TextStyle(
               fontSize: 12,
               color: Colors.black45,
             ),
@@ -159,7 +165,8 @@ class DayTime extends StatelessWidget {
 }
 
 class LastTransaction extends StatelessWidget {
-  const LastTransaction({
+  final homeController = Get.find<HomeController>();
+  LastTransaction({
     Key? key,
   }) : super(key: key);
 
@@ -198,40 +205,39 @@ class LastTransaction extends StatelessWidget {
               ),
             ),
             // Data Last Transaction
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                ItemLastTransaction(
-                  title: '3 Seconds Bundle',
-                  date: 'Senin, 23 Jan 2022',
-                  time: '11:32',
-                ),
-                ItemLastTransaction(
-                  title: 'Bandana Swecsh',
-                  date: 'Rabu, 20 Feb 2022',
-                  time: '10:49',
-                ),
-                ItemLastTransaction(
-                  title: 'PDH Teknokrat',
-                  date: 'Sabtu, 06 Okt 2022',
-                  time: '10:49',
-                ),
-                ItemLastTransaction(
-                  title: 'Cutting Laser',
-                  date: 'Minggu, 08 Des 2022',
-                  time: '08:49',
-                ),
-                ItemLastTransaction(
-                  title: 'Distro Original',
-                  date: 'Minggu, 08 Des 2022',
-                  time: '13:49',
-                ),
-                ItemLastTransaction(
-                  title: 'Daster Original',
-                  date: 'Minggu, 08 Des 2022',
-                  time: '22:49',
-                ),
-              ],
+            GetBuilder(
+              init: homeController,
+              builder: (_) {
+                if (homeController.listLastTransaction.isEmpty) {
+                  return const Text(
+                    'Belum ada satupun transaksi',
+                    style: TextStyle(fontSize: 11),
+                  );
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: homeController.listLastTransaction
+                      .asMap()
+                      .map(
+                        (index, value) => MapEntry(
+                          index,
+                          ItemLastTransaction(
+                            title: homeController
+                                .listLastTransaction[index].idDocument,
+                            date: DateFormat('EEEE, d MMM y', 'id').format(
+                              value.createdAt.toDate(),
+                            ),
+                            time: DateFormat.Hm().format(
+                              value.createdAt.toDate(),
+                            ),
+                          ),
+                        ),
+                      )
+                      .values
+                      .toList(),
+                );
+              },
             )
           ],
         ),
@@ -256,7 +262,7 @@ class ItemLastTransaction extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size.width;
 
-    if (screenSize > 1460) {
+    if (screenSize > 1630) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
@@ -290,7 +296,7 @@ class ItemLastTransaction extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 11),
+                  style: const TextStyle(fontSize: 10.5),
                 ),
                 Text(
                   date,

@@ -25,4 +25,12 @@ class VariantProductModel {
       'stock': stock,
     };
   }
+
+  String variantAsString() {
+    return '$color | $size';
+  }
+
+  bool isEqual(VariantProductModel model) {
+    return idDocument == model.idDocument;
+  }
 }

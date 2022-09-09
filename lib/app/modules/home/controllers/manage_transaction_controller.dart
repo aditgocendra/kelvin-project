@@ -6,6 +6,7 @@ import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/models/detail_transaction.dart';
 import 'package:kelvin_project/app/models/products.dart';
 import 'package:kelvin_project/app/models/transaction.dart';
+import 'package:kelvin_project/app/models/variant_product.dart';
 import 'package:kelvin_project/services/firebase/firestore.service.dart';
 import 'package:kelvin_project/services/local/pdf_services.dart';
 
@@ -112,6 +113,7 @@ class ManageTransactionController extends GetxController {
       productName: resultProduct.get('productName'),
       price: resultProduct.get('price'),
       allStock: resultProduct.get('allStock'),
+      sold: resultProduct.get('sold'),
       idCategory: resultProduct.get('idCategory'),
       searchKeyword: List<String>.from(resultProduct.get('searchKeyword')),
       createdAt: resultProduct.get('createdAt'),
@@ -125,19 +127,26 @@ class ManageTransactionController extends GetxController {
             subCollectionPath: 'variant_product')
         .get();
 
-    List<String> variantProduct = [];
+    List<VariantProductModel> listVariantProduct = [];
 
     for (var doc in resultVariantProduct.docs) {
-      variantProduct.add('${doc['color']} | ${doc['size']}');
+      VariantProductModel variant = VariantProductModel(
+        color: doc['color'],
+        size: doc['size'],
+        stock: doc['stock'],
+      );
+      variant.idDocument = doc.id;
+      listVariantProduct.add(variant);
+      // variantProduct.add('${doc['color']} | ${doc['size']}');
     }
 
     // Add Form Product
     listProductForm.add({
       'product': product,
       'variantSelected': [
-        '',
+        listVariantProduct[0],
       ],
-      'variantProduct': variantProduct,
+      'variantProduct': listVariantProduct,
     });
 
     updateTotalPay();
@@ -176,13 +185,32 @@ class ManageTransactionController extends GetxController {
 
       for (var i = 0; i < listProductForm.length; i++) {
         ProductModel productModel = listProductForm[i]['product'];
-        List<String> variantSelect = listProductForm[i]['variantSelected'];
+        int totalProductBuy = 0;
+        List<String> variantSelect = [];
+
+        for (VariantProductModel element in listProductForm[i]
+            ['variantSelected']) {
+          variantSelect.add('${element.color} | ${element.size}');
+          totalProductBuy++;
+
+          await updateVariantProduct(
+            productModel.idDocument,
+            element.idDocument,
+            element.stock - 1,
+          );
+        }
+
         await setDetailTransaction(
           codeTransaction,
           productModel,
           variantSelect,
         );
+
+        productModel.sold = productModel.sold + totalProductBuy;
+        productModel.allStock = productModel.allStock - totalProductBuy;
+        await updateProduct(productModel);
       }
+
       resetFormProduct();
       update();
       Get.back();
@@ -220,6 +248,23 @@ class ManageTransactionController extends GetxController {
       idDoc: codeTransaction,
       subCollectionPath: 'detailTransaction',
     ).doc(product.idDocument).set(detailTrans);
+  }
+
+  Future updateProduct(ProductModel productModel) async {
+    // Update Sold Product
+    await FirestoreService.refProduct
+        .doc(productModel.idDocument)
+        .set(productModel);
+  }
+
+  Future updateVariantProduct(idProduct, idVariant, stock) async {
+    await FirestoreService.refSubCollectionProduct(
+      idDoc: idProduct,
+      collection: 'products',
+      subCollectionPath: 'variant_product',
+    ).doc(idVariant).get().then((value) {
+      value.reference.update({'stock': value['stock'] - 1});
+    });
   }
 
   // Delete Transaction
@@ -377,7 +422,9 @@ class ManageTransactionController extends GetxController {
   void addFieldVariant(int indexProduct) {
     final variantSelected = listProductForm[indexProduct]['variantSelected'];
 
-    variantSelected.add('');
+    final variantProduct = listProductForm[indexProduct]['variantProduct'][0];
+
+    variantSelected.add(variantProduct);
     listProductForm[indexProduct]['variantSelected'] = variantSelected;
     updateTotalPay();
 

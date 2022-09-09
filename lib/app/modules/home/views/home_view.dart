@@ -67,7 +67,7 @@ class AdminPanel extends StatelessWidget {
                         content = const SearchProduct();
                         break;
                       default:
-                        content = const Dashboard();
+                        content = Dashboard();
                     }
                     return content;
                   },
@@ -76,7 +76,7 @@ class AdminPanel extends StatelessWidget {
             ),
           ),
           // Rightbar
-          if (screenSize > 1060)
+          if (screenSize > 1100)
             const Expanded(
               child: Rightbar(),
             ),

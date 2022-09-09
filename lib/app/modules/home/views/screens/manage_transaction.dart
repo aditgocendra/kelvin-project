@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:kelvin_project/app/globals/constant.dart';
 import 'package:kelvin_project/app/globals/styles.dart';
+import 'package:kelvin_project/app/models/variant_product.dart';
 import 'package:kelvin_project/app/modules/home/controllers/manage_transaction_controller.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shimmer/shimmer.dart';
@@ -799,9 +800,14 @@ class FormProductVariantTransaction extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      child: DropdownSearch<String>(
+      child: DropdownSearch<VariantProductModel>(
+        selectedItem: mTransactionCtl.listProductForm[indexProduct]
+            ['variantSelected'][indexVariant],
         items: mTransactionCtl.listProductForm[indexProduct]['variantProduct'],
-        onChanged: (String? value) {
+        compareFn: (i, s) => i.isEqual(s),
+        itemAsString: (VariantProductModel variant) =>
+            variant.variantAsString(),
+        onChanged: (VariantProductModel? value) {
           mTransactionCtl.listProductForm[indexProduct]['variantSelected']
               [indexVariant] = value;
         },
