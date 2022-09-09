@@ -59,6 +59,7 @@ class DashboardController extends GetxController {
         .limit(5)
         .snapshots()
         .listen((event) {
+      listNewProduct.clear();
       // Set Product
       for (var doc in event.docs) {
         final product = ProductModel(
@@ -84,6 +85,7 @@ class DashboardController extends GetxController {
         .limit(5)
         .snapshots()
         .listen((event) {
+      listStockProduct.clear();
       // Set Product
       for (var doc in event.docs) {
         final product = ProductModel(
@@ -109,6 +111,7 @@ class DashboardController extends GetxController {
         .limit(5)
         .snapshots()
         .listen((event) {
+      listSoldProduct.clear();
       // Set Product
       for (var doc in event.docs) {
         final product = ProductModel(
@@ -164,6 +167,9 @@ class DashboardController extends GetxController {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((event) {
+      if (event.docs.isEmpty) {
+        return;
+      }
       final transaction = event.docs[0];
       // Set Transaction
       listDashboardMenu[3]['value'] = event.docs.length;
