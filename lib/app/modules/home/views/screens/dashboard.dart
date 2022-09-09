@@ -1,26 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:kelvin_project/app/modules/home/controllers/dashboard_controller.dart';
 import 'package:unicons/unicons.dart';
 
 import '../../../../globals/constant.dart';
 
 class Dashboard extends StatelessWidget {
-  const Dashboard({Key? key}) : super(key: key);
+  final dashboardController = Get.find<DashboardController>();
+  Dashboard({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size.width;
-    double aspectRatio = screenSize / 2021;
+    double aspectRatio = screenSize / 2300; // X Large
     int axisCount = 3;
 
-    if (screenSize < 1280) {
-      // Medium
-      aspectRatio = screenSize / 1347;
+    if (screenSize < 1350) {
+      // Large
+      aspectRatio = screenSize / 1540;
       axisCount = 2;
     }
 
-    if (screenSize < 700) {
+    if (screenSize < 1065) {
       // Medium
-      aspectRatio = screenSize / 580;
+      aspectRatio = screenSize / 1320;
+      axisCount = 2;
+    }
+
+    if (screenSize < 880) {
+      // Small
+      aspectRatio = screenSize / 700;
       axisCount = 1;
     }
 
@@ -68,35 +78,32 @@ class Dashboard extends StatelessWidget {
                         size: 20,
                       ),
                     ),
-                    ListView(
-                      primary: false,
-                      shrinkWrap: true,
-                      children: const [
-                        ItemProductList(
-                          title: '3 Seconds Bundle',
-                          index: 1,
-                          subtitle: 'Rp. 30.000',
-                          trailing: 'Terjual (22)',
-                        ),
-                        ItemProductList(
-                          title: 'Baju Daster',
-                          index: 2,
-                          subtitle: 'Rp. 130.000',
-                          trailing: 'Terjual (22)',
-                        ),
-                        ItemProductList(
-                          title: 'Penting Original',
-                          index: 3,
-                          subtitle: 'Rp. 125.000',
-                          trailing: 'Terjual (20)',
-                        ),
-                        ItemProductList(
-                          title: 'Black Original',
-                          index: 4,
-                          subtitle: 'Rp. 170.000',
-                          trailing: 'Terjual (31)',
-                        ),
-                      ],
+                    GetBuilder(
+                      init: dashboardController,
+                      builder: (_) {
+                        return Column(
+                          children: dashboardController.listSoldProduct
+                              .asMap()
+                              .map(
+                                (index, value) => MapEntry(
+                                  index,
+                                  ItemProductList(
+                                    title: value.productName,
+                                    index: index + 1,
+                                    subtitle: NumberFormat.currency(
+                                      locale: 'id',
+                                      symbol: 'Rp. ',
+                                      decimalDigits: 0,
+                                    ).format(value.price),
+                                    trailing:
+                                        'Terjual (${value.sold.toString()})',
+                                  ),
+                                ),
+                              )
+                              .values
+                              .toList(),
+                        );
+                      },
                     )
                   ],
                 ),
@@ -113,9 +120,9 @@ class Dashboard extends StatelessWidget {
                   ),
                 ),
                 child: Column(
-                  children: const [
+                  children: [
                     // Header
-                    ListTile(
+                    const ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(
                         'Produk Stok',
@@ -128,29 +135,31 @@ class Dashboard extends StatelessWidget {
                         size: 20,
                       ),
                     ),
-                    ItemProductList(
-                      title: 'Baju Daster Original',
-                      index: 1,
-                      subtitle: 'Rp. 30.000',
-                      trailing: 'Stok (130)',
-                    ),
-                    ItemProductList(
-                      title: 'Baju Tidur',
-                      index: 2,
-                      subtitle: 'Rp. 30.000',
-                      trailing: 'Stok (120)',
-                    ),
-                    ItemProductList(
-                      title: 'Baju Daster Original',
-                      index: 3,
-                      subtitle: 'Rp. 30.000',
-                      trailing: 'Stok (146)',
-                    ),
-                    ItemProductList(
-                      title: 'Baju Ibu Ibu',
-                      index: 4,
-                      subtitle: 'Rp. 30.000',
-                      trailing: 'Stok (146)',
+                    GetBuilder(
+                      init: dashboardController,
+                      builder: (_) {
+                        return Column(
+                          children: dashboardController.listStockProduct
+                              .asMap()
+                              .map(
+                                (index, value) => MapEntry(
+                                  index,
+                                  ItemProductList(
+                                    title: value.productName,
+                                    index: index + 1,
+                                    subtitle: NumberFormat.currency(
+                                      locale: 'id',
+                                      symbol: 'Rp. ',
+                                      decimalDigits: 0,
+                                    ).format(value.price),
+                                    trailing: 'Stok (${value.allStock})',
+                                  ),
+                                ),
+                              )
+                              .values
+                              .toList(),
+                        );
+                      },
                     )
                   ],
                 ),
@@ -167,9 +176,9 @@ class Dashboard extends StatelessWidget {
                   ),
                 ),
                 child: Column(
-                  children: const [
+                  children: [
                     // Header
-                    ListTile(
+                    const ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(
                         'Produk Terbaru',
@@ -184,30 +193,32 @@ class Dashboard extends StatelessWidget {
                         size: 20,
                       ),
                     ),
-                    ItemProductList(
-                      title: 'Baju Daster Original',
-                      index: 1,
-                      subtitle: 'Rp. 30.000',
-                      trailing: 'Tersedia',
-                    ),
-                    ItemProductList(
-                      title: 'Timoty X Kernel',
-                      index: 2,
-                      subtitle: 'Rp. 130.000',
-                      trailing: 'Tersedia',
-                    ),
-                    ItemProductList(
-                      title: 'Timoty X Kernel',
-                      index: 3,
-                      subtitle: 'Rp. 130.000',
-                      trailing: 'Tersedia',
-                    ),
-                    ItemProductList(
-                      title: 'Baju Anak 3D Design',
-                      index: 4,
-                      subtitle: 'Rp. 130.000',
-                      trailing: 'Tersedia',
-                    ),
+                    GetBuilder(
+                      init: dashboardController,
+                      builder: (_) {
+                        return Column(
+                          children: dashboardController.listNewProduct
+                              .asMap()
+                              .map(
+                                (index, value) => MapEntry(
+                                  index,
+                                  ItemProductList(
+                                    title: value.productName,
+                                    index: index + 1,
+                                    subtitle: NumberFormat.currency(
+                                      locale: 'id',
+                                      symbol: 'Rp. ',
+                                      decimalDigits: 0,
+                                    ).format(value.price),
+                                    trailing: 'Tersedia',
+                                  ),
+                                ),
+                              )
+                              .values
+                              .toList(),
+                        );
+                      },
+                    )
                   ],
                 ),
               )
@@ -220,7 +231,9 @@ class Dashboard extends StatelessWidget {
 }
 
 class ItemHorizontalTop extends StatelessWidget {
+  final dashboardController = Get.find<DashboardController>();
   double screenSize;
+
   ItemHorizontalTop({
     Key? key,
     required this.screenSize,
@@ -243,83 +256,89 @@ class ItemHorizontalTop extends StatelessWidget {
       axisCount = 1;
     }
 
-    return GridView.builder(
-      shrinkWrap: true,
-      primary: false,
-      itemCount: 4,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: axisCount,
-        childAspectRatio: aspectRatio,
+    return GetBuilder(
+      init: dashboardController,
+      builder: (_) => GridView.builder(
+        shrinkWrap: true,
+        primary: false,
+        itemCount: dashboardController.listDashboardMenu.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: axisCount,
+          childAspectRatio: aspectRatio,
+        ),
+        itemBuilder: (context, index) {
+          return Container(
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(
+                Radius.circular(16),
+              ),
+              border: Border.all(
+                color: Colors.grey.shade200,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            dashboardController.listDashboardMenu[index]
+                                ['title'],
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              color: Colors.black54,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 4,
+                          ),
+                          Text(
+                            dashboardController.listDashboardMenu[index]
+                                    ['value']
+                                .toString(),
+                            style: const TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(12),
+                          ),
+                        ),
+                        child: Icon(
+                          dashboardController.listDashboardMenu[index]['icon'],
+                          color: primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  'Terakhir Diupdate : ${dashboardController.listDashboardMenu[index]['last_update']}',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Colors.black38,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
-      itemBuilder: (context, index) {
-        return Container(
-          margin: const EdgeInsets.all(8),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(
-              Radius.circular(16),
-            ),
-            border: Border.all(
-              color: Colors.grey.shade200,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          listDashboardMenu[index]['title'],
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            color: Colors.black54,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 4,
-                        ),
-                        Text(
-                          listDashboardMenu[index]['value'],
-                          style: const TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(12),
-                        ),
-                      ),
-                      child: Icon(
-                        listDashboardMenu[index]['icon'],
-                        color: primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Text(
-                'Terakhir diupdate : 23 Mar 2022',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.black38,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
