@@ -265,30 +265,37 @@ class ManageProductController extends GetxController {
     addFormVariant();
   }
 
+  void streamCategory() {
+    FirestoreService.refCategory
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen((event) {
+      if (categoryData.isEmpty) {
+        return;
+      }
+      categoryData.clear();
+      for (var doc in event.docs) {
+        final ctg = CategoryModel(
+          name: doc['name'],
+          createdAt: doc['createdAt'],
+        );
+        ctg.idDocument = doc.id;
+        categoryData.add(ctg);
+      }
+      update();
+    });
+  }
+
   @override
   void onInit() async {
     isLoading.toggle();
-    // listVariantProduct.add(defaultVariantProduct);
     addFormVariant();
 
     final result = await readProduct();
     fetchProduct(result);
 
     // Set data category
-    final dataCategory = await FirestoreService.refCategory.get();
-    int index = 0;
-    for (var doc in dataCategory.docs) {
-      categoryData.add(
-        CategoryModel(
-          name: doc['name'],
-          createdAt: doc['createdAt'],
-        ),
-      );
-      categoryData[index].idDocument = doc.id;
-      index++;
-    }
-
-    update();
+    streamCategory();
 
     super.onInit();
   }
