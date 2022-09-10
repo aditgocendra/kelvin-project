@@ -3,23 +3,34 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class CategoryModel {
   String name;
   Timestamp createdAt;
+  List<String>? searchKeyword;
   String? idDocument;
 
   CategoryModel({
     required this.name,
     required this.createdAt,
+    this.searchKeyword,
   });
 
-  CategoryModel.fromJson(Map<String, Object?> json)
-      : this(
-          name: json['name']! as String,
-          createdAt: json['createdAt']! as Timestamp,
-        );
+  factory CategoryModel.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+    SnapshotOptions? options,
+  ) {
+    final data = snapshot.data();
+    return CategoryModel(
+      name: data?['name'],
+      createdAt: data?['createdAt'],
+      searchKeyword: data?['searchKeyword'] is Iterable
+          ? List.from(data?['searchKeyword'])
+          : null,
+    );
+  }
 
-  Map<String, Object?> toJson() {
+  Map<String, dynamic> toFirestore() {
     return {
-      'name': name,
-      'createdAt': createdAt,
+      "name": name,
+      "createdAt": createdAt,
+      if (searchKeyword != null) "searchKeyword": searchKeyword,
     };
   }
 

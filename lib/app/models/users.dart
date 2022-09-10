@@ -5,6 +5,7 @@ class UserModel {
   String email;
   String role;
   String password;
+  List<String>? searchKeyword;
   Timestamp createdAt;
   String? idDocument;
 
@@ -13,25 +14,35 @@ class UserModel {
     required this.email,
     required this.role,
     required this.password,
+    this.searchKeyword,
     required this.createdAt,
   });
 
-  UserModel.fromJson(Map<String, Object?> json)
-      : this(
-          username: json['username']! as String,
-          email: json['email']! as String,
-          role: json['role']! as String,
-          password: json['password']! as String,
-          createdAt: json['createdAt']! as Timestamp,
-        );
+  factory UserModel.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+    SnapshotOptions? options,
+  ) {
+    final data = snapshot.data();
+    return UserModel(
+      username: data?['username'],
+      email: data?['email'],
+      role: data?['role'],
+      password: data?['password'],
+      createdAt: data?['createdAt'],
+      searchKeyword: data?['searchKeyword'] is Iterable
+          ? List.from(data?['searchKeyword'])
+          : null,
+    );
+  }
 
-  Map<String, Object?> toJson() {
+  Map<String, dynamic> toFirestore() {
     return {
-      'username': username,
-      'email': email,
-      'role': role,
-      'password': password,
-      'createdAt': createdAt,
+      "username": username,
+      "email": email,
+      "role": role,
+      "password": password,
+      "createdAt": createdAt,
+      if (searchKeyword != null) "searchKeyword": searchKeyword,
     };
   }
 }
