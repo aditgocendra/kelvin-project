@@ -42,6 +42,9 @@ class DashboardController extends GetxController {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((event) {
+      if (event.docs.isEmpty) {
+        return;
+      }
       final product = event.docs[0];
 
       // Set Product
@@ -59,6 +62,10 @@ class DashboardController extends GetxController {
         .limit(5)
         .snapshots()
         .listen((event) {
+      if (event.docs.isEmpty) {
+        return;
+      }
+
       listNewProduct.clear();
       // Set Product
       for (var doc in event.docs) {
@@ -85,6 +92,9 @@ class DashboardController extends GetxController {
         .limit(5)
         .snapshots()
         .listen((event) {
+      if (event.docs.isEmpty) {
+        return;
+      }
       listStockProduct.clear();
       // Set Product
       for (var doc in event.docs) {
@@ -111,6 +121,10 @@ class DashboardController extends GetxController {
         .limit(5)
         .snapshots()
         .listen((event) {
+      if (event.docs.isEmpty) {
+        return;
+      }
+
       listSoldProduct.clear();
       // Set Product
       for (var doc in event.docs) {
@@ -137,6 +151,9 @@ class DashboardController extends GetxController {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((event) {
+      if (event.docs.isEmpty) {
+        return;
+      }
       final category = event.docs[0];
       // Set Category
       listDashboardMenu[1]['value'] = event.docs.length;
@@ -152,6 +169,9 @@ class DashboardController extends GetxController {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((event) {
+      if (event.docs.isEmpty) {
+        return;
+      }
       final user = event.docs[0];
       // Set User
       listDashboardMenu[2]['value'] = event.docs.length;

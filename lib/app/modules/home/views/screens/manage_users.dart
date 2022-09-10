@@ -1,10 +1,9 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:kelvin_project/app/globals/constant.dart';
-import 'package:kelvin_project/app/globals/styles.dart';
+import 'package:kelvin_project/app/utils/constant.dart';
+import 'package:kelvin_project/app/utils/styles.dart';
 import 'package:kelvin_project/app/models/users.dart';
-
 import 'package:kelvin_project/app/modules/home/controllers/manage_users_controller.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:unicons/unicons.dart';
@@ -16,6 +15,7 @@ class ManageUsers extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size.width;
+    mUsersController.refreshData();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

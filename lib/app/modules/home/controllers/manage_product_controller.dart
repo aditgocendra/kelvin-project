@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:kelvin_project/app/models/category.dart';
 import 'package:kelvin_project/app/models/products.dart';
 import 'package:kelvin_project/app/models/variant_product.dart';
+import 'package:kelvin_project/app/utils/dialog.dart';
+import 'package:kelvin_project/app/utils/functions.dart';
 import 'package:kelvin_project/services/firebase/firestore.service.dart';
 
 class ManageProductController extends GetxController {
@@ -32,6 +34,22 @@ class ManageProductController extends GetxController {
 
   // Category id selected
   String? idCategorySelected;
+
+  // Search Data Product
+  Future searchData(String keyword) async {
+    await FirestoreService.refProduct
+        .where('searchKeyword', arrayContains: keyword.toLowerCase())
+        .get()
+        .then((result) {
+      if (result.docs.isEmpty) {
+        return;
+      }
+
+      isLoading.toggle();
+      listProduct.clear();
+      fetchProduct(result);
+    });
+  }
 
   // Read Data Product
   Future readProduct() async {
@@ -101,7 +119,7 @@ class ManageProductController extends GetxController {
       sold: 0,
       idCategory: idCategorySelected!,
       createdAt: FirestoreService.timeStamp,
-      searchKeyword: generateSearchKeyword(sentence: nameProduct),
+      searchKeyword: Functions.generateSearchKeyword(sentence: nameProduct),
     );
 
     await FirestoreService.refProduct
@@ -130,7 +148,10 @@ class ManageProductController extends GetxController {
 
       update();
     }).catchError(
-      (error) => print(error),
+      (err) {
+        Get.back();
+        DialogMessage.dialogErrorFromFirebase(err);
+      },
     );
   }
 
@@ -168,7 +189,10 @@ class ManageProductController extends GetxController {
       update();
       Get.back();
     }).catchError(
-      (error) => print(error),
+      (err) {
+        Get.back();
+        DialogMessage.dialogErrorFromFirebase(err);
+      },
     );
   }
 
@@ -192,6 +216,14 @@ class ManageProductController extends GetxController {
     update();
   }
 
+  // Refresh Data
+  Future refreshData() async {
+    listProduct.clear();
+    isLoading.toggle();
+    final result = await readProduct();
+    fetchProduct(result);
+  }
+
   // Validation Form Product
   bool validationFormProduct() {
     if (nameProductTec.text.isEmpty) {
@@ -210,14 +242,6 @@ class ManageProductController extends GetxController {
       return false;
     }
     return true;
-  }
-
-  // Generate Search Keyword
-  List<String> generateSearchKeyword({required String sentence}) {
-    String clearSymbol = sentence.replaceAll(RegExp(r"[^\s\w]"), '');
-    String clear2WhiteSpace = clearSymbol.replaceAll('  ', ' ');
-
-    return clear2WhiteSpace.toLowerCase().split(" ");
   }
 
   // Add Form Variant
@@ -265,30 +289,38 @@ class ManageProductController extends GetxController {
     addFormVariant();
   }
 
+  // Stream Category
+  void streamCategory() {
+    FirestoreService.refCategory
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen((event) {
+      if (event.docs.isEmpty) {
+        return;
+      }
+
+      categoryData.clear();
+
+      for (var doc in event.docs) {
+        final ctg = CategoryModel(
+          name: doc['name'],
+          searchKeyword: List.from(doc['searchKeyword']),
+          createdAt: doc['createdAt'],
+        );
+        ctg.idDocument = doc.id;
+        categoryData.add(ctg);
+      }
+
+      update();
+    });
+  }
+
   @override
   void onInit() async {
-    isLoading.toggle();
-    // listVariantProduct.add(defaultVariantProduct);
     addFormVariant();
 
-    final result = await readProduct();
-    fetchProduct(result);
-
     // Set data category
-    final dataCategory = await FirestoreService.refCategory.get();
-    int index = 0;
-    for (var doc in dataCategory.docs) {
-      categoryData.add(
-        CategoryModel(
-          name: doc['name'],
-          createdAt: doc['createdAt'],
-        ),
-      );
-      categoryData[index].idDocument = doc.id;
-      index++;
-    }
-
-    update();
+    streamCategory();
 
     super.onInit();
   }

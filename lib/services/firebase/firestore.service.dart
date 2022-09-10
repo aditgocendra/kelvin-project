@@ -12,10 +12,10 @@ abstract class FirestoreService {
   // Reference Collection Path Data
   static final refCategory = FirebaseFirestore.instance
       .collection('category')
-      .withConverter<CategoryModel>(
-          fromFirestore: (snapshot, _) =>
-              CategoryModel.fromJson(snapshot.data()!),
-          toFirestore: (ctg, _) => ctg.toJson());
+      .withConverter(
+          fromFirestore: CategoryModel.fromFirestore,
+          toFirestore: (CategoryModel ctgModel, options) =>
+              ctgModel.toFirestore());
 
   static final refProduct = FirebaseFirestore.instance
       .collection('products')
@@ -33,9 +33,10 @@ abstract class FirestoreService {
 
   static final refUsers = FirebaseFirestore.instance
       .collection('users')
-      .withConverter<UserModel>(
-          fromFirestore: (snapshot, _) => UserModel.fromJson(snapshot.data()!),
-          toFirestore: (ctg, _) => ctg.toJson());
+      .withConverter(
+          fromFirestore: UserModel.fromFirestore,
+          toFirestore: (UserModel userModel, options) =>
+              userModel.toFirestore());
 
   // Reference Sub Collection
   static CollectionReference refSubCollectionProduct({

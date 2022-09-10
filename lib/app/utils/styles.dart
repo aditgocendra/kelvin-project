@@ -1,6 +1,6 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
-import 'package:kelvin_project/app/globals/constant.dart';
+import 'package:kelvin_project/app/utils/constant.dart';
 
 class GlobalStyles {
   static InputDecoration formInputDecoration(String label) {

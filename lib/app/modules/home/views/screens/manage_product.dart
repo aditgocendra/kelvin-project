@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:kelvin_project/app/globals/constant.dart';
-import 'package:kelvin_project/app/globals/styles.dart';
+import 'package:kelvin_project/app/utils/constant.dart';
+import 'package:kelvin_project/app/utils/styles.dart';
 import 'package:kelvin_project/app/models/category.dart';
 import 'package:kelvin_project/app/models/products.dart';
 import 'package:kelvin_project/app/modules/home/controllers/manage_product_controller.dart';
@@ -19,6 +19,7 @@ class ManageProduct extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size.width;
+    mProductController.refreshData();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

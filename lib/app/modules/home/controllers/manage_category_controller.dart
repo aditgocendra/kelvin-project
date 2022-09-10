@@ -2,10 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:kelvin_project/app/models/category.dart';
+import 'package:kelvin_project/app/utils/dialog.dart';
+import 'package:kelvin_project/app/utils/functions.dart';
 import 'package:kelvin_project/services/firebase/firestore.service.dart';
 
 class ManageCategoryController extends GetxController {
   final isLoading = false.obs;
+
+  // Error Message
+  final errorMessageForm = ''.obs;
 
   // Controller
   ScrollController scrollHorizontalTable = ScrollController();
@@ -13,21 +18,40 @@ class ManageCategoryController extends GetxController {
 
   List<CategoryModel> listCategory = [];
 
+  // Search Data Category
+  Future searchData(String keyword) async {
+    await FirestoreService.refCategory
+        .where('searchKeyword', arrayContains: keyword.toLowerCase())
+        .get()
+        .then((result) {
+      if (result.docs.isEmpty) {
+        return;
+      }
+
+      isLoading.toggle();
+      listCategory.clear();
+      fetchCategory(result);
+    });
+  }
+
   // Reading Data
   Future<QuerySnapshot> readCateogry() async {
     return await FirestoreService.refCategory.orderBy('createdAt').get();
   }
 
-  // Write Data
-  Future writeCategory() async {
+  // Create Data
+  Future createCategory() async {
     if (!validationForm()) {
-      print('Text field masih kosong');
+      errorMessageForm.value = 'Form kategori masih kosong';
       return;
     }
 
     String name = nameTec.text.trim();
-    CategoryModel newCategory =
-        CategoryModel(name: name, createdAt: Timestamp.now());
+    CategoryModel newCategory = CategoryModel(
+      name: name,
+      searchKeyword: Functions.generateSearchKeyword(sentence: name),
+      createdAt: Timestamp.now(),
+    );
 
     await FirestoreService.refCategory.add(newCategory).then(
       (val) {
@@ -38,7 +62,10 @@ class ManageCategoryController extends GetxController {
         Get.back();
       },
     ).catchError(
-      (error) => print(error),
+      (err) {
+        Get.back();
+        DialogMessage.dialogErrorFromFirebase(err);
+      },
     );
   }
 
@@ -46,18 +73,20 @@ class ManageCategoryController extends GetxController {
   Future updateCategory(String idDocument) async {
     String name = nameTec.text.trim();
 
-    // CategoryModel ctg = CategoryModel(name: name, createdAt: )
-
-    await FirestoreService.refCategory
-        .doc(idDocument)
-        .update({'name': name}).then((_) {
+    await FirestoreService.refCategory.doc(idDocument).update({
+      'name': name,
+      'searchKeyword': Functions.generateSearchKeyword(sentence: name)
+    }).then((_) {
       listCategory[listCategory
               .indexWhere((element) => element.idDocument == idDocument)]
           .name = name;
       Get.back();
       update();
     }).catchError(
-      (error) => print(error),
+      (err) {
+        Get.back();
+        DialogMessage.dialogErrorFromFirebase(err);
+      },
     );
   }
 
@@ -68,8 +97,18 @@ class ManageCategoryController extends GetxController {
       Get.back();
       update();
     }).catchError(
-      (error) => print(error),
+      (err) {
+        Get.back();
+        DialogMessage.dialogErrorFromFirebase(err);
+      },
     );
+  }
+
+  Future refreshData() async {
+    listCategory.clear();
+    isLoading.toggle();
+    final result = await readCateogry();
+    fetchCategory(result);
   }
 
   // Validation form
@@ -85,6 +124,7 @@ class ManageCategoryController extends GetxController {
     for (var doc in data.docs) {
       CategoryModel ctg = CategoryModel(
         name: doc['name'],
+        searchKeyword: List.from(doc['searchKeyword']),
         createdAt: doc['createdAt'],
       );
       ctg.idDocument = doc.id;
@@ -92,14 +132,5 @@ class ManageCategoryController extends GetxController {
     }
     isLoading.toggle();
     update();
-  }
-
-  @override
-  void onInit() async {
-    isLoading.toggle();
-    final result = await readCateogry();
-    fetchCategory(result);
-
-    super.onInit();
   }
 }

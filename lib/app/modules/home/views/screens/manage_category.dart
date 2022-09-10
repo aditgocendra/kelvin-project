@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:kelvin_project/app/globals/constant.dart';
-import 'package:kelvin_project/app/globals/styles.dart';
+import 'package:kelvin_project/app/utils/constant.dart';
+import 'package:kelvin_project/app/utils/styles.dart';
 import 'package:kelvin_project/app/modules/home/controllers/manage_category_controller.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:unicons/unicons.dart';
@@ -13,6 +13,7 @@ class ManageCategory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size.width;
+    mCtgController.refreshData();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -140,6 +141,7 @@ class ManageCategory extends StatelessWidget {
   }
 }
 
+// ignore: must_be_immutable
 class DialogFormCategory extends StatelessWidget {
   String titleForm;
   String? idDocument;
@@ -213,13 +215,22 @@ class DialogFormCategory extends StatelessWidget {
                         GlobalStyles.formInputDecoration('Nama Kategori'),
                   ),
                 ),
+                Obx(
+                  () => Text(
+                    mCtgController.errorMessageForm.value,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                ),
                 const SizedBox(
                   height: 16,
                 ),
                 ElevatedButton(
                   onPressed: () {
                     if (name == null) {
-                      mCtgController.writeCategory();
+                      mCtgController.createCategory();
                     } else {
                       mCtgController.updateCategory(idDocument!);
                     }

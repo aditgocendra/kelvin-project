@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
-import 'package:kelvin_project/app/globals/constant.dart';
-import 'package:kelvin_project/app/globals/styles.dart';
+import 'package:kelvin_project/app/utils/constant.dart';
+import 'package:kelvin_project/app/utils/styles.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../controllers/login_controller.dart';
