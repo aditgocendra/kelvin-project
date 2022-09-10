@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:kelvin_project/app/models/users.dart';
+import 'package:kelvin_project/app/utils/dialog.dart';
 import 'package:kelvin_project/app/utils/functions.dart';
 import 'package:kelvin_project/services/firebase/firestore.service.dart';
 import 'package:kelvin_project/services/local/encryption.dart';
@@ -139,7 +140,10 @@ class ManageUsersController extends GetxController {
       update();
 
       Get.back();
-    }).catchError((err) => print(err));
+    }).catchError((err) {
+      Get.back();
+      DialogMessage.dialogErrorFromFirebase(err);
+    });
   }
 
   // Edit Password
@@ -179,7 +183,10 @@ class ManageUsersController extends GetxController {
       update();
 
       Get.back();
-    }).catchError((err) => print(err));
+    }).catchError((err) {
+      Get.back();
+      DialogMessage.dialogErrorFromFirebase(err);
+    });
   }
 
   // Delete Data User
@@ -188,7 +195,10 @@ class ManageUsersController extends GetxController {
       listUsers.removeWhere((user) => user.idDocument == idDoc);
       update();
       Get.back();
-    }).catchError((err) => print(err));
+    }).catchError((err) {
+      Get.back();
+      DialogMessage.dialogErrorFromFirebase(err);
+    });
   }
 
   // Check User Data

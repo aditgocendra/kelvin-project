@@ -141,6 +141,7 @@ class ManageCategory extends StatelessWidget {
   }
 }
 
+// ignore: must_be_immutable
 class DialogFormCategory extends StatelessWidget {
   String titleForm;
   String? idDocument;
@@ -212,6 +213,15 @@ class DialogFormCategory extends StatelessWidget {
                     cursorColor: primaryColor,
                     decoration:
                         GlobalStyles.formInputDecoration('Nama Kategori'),
+                  ),
+                ),
+                Obx(
+                  () => Text(
+                    mCtgController.errorMessageForm.value,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.redAccent,
+                    ),
                   ),
                 ),
                 const SizedBox(

@@ -7,6 +7,7 @@ import 'package:kelvin_project/app/models/detail_transaction.dart';
 import 'package:kelvin_project/app/models/products.dart';
 import 'package:kelvin_project/app/models/transaction.dart';
 import 'package:kelvin_project/app/models/variant_product.dart';
+import 'package:kelvin_project/app/utils/dialog.dart';
 import 'package:kelvin_project/services/firebase/firestore.service.dart';
 import 'package:kelvin_project/services/local/pdf_services.dart';
 
@@ -238,18 +239,7 @@ class ManageTransactionController extends GetxController {
       Get.back();
     }).catchError((err) {
       Get.back();
-      Get.defaultDialog(
-        contentPadding: const EdgeInsets.all(32),
-        title: 'Kesalahan ${err.hashCode.toString()}',
-        middleText:
-            'Terjadi kesalahan tak terduga, silahkan coba kembali nanti',
-        textConfirm: 'Ok',
-        buttonColor: primaryColor,
-        confirmTextColor: Colors.white,
-        onConfirm: () {
-          Get.back();
-        },
-      );
+      DialogMessage.dialogErrorFromFirebase(err);
     });
   }
 

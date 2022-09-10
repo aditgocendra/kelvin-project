@@ -2,11 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:kelvin_project/app/models/category.dart';
+import 'package:kelvin_project/app/utils/dialog.dart';
 import 'package:kelvin_project/app/utils/functions.dart';
 import 'package:kelvin_project/services/firebase/firestore.service.dart';
 
 class ManageCategoryController extends GetxController {
   final isLoading = false.obs;
+
+  // Error Message
+  final errorMessageForm = ''.obs;
 
   // Controller
   ScrollController scrollHorizontalTable = ScrollController();
@@ -38,7 +42,7 @@ class ManageCategoryController extends GetxController {
   // Create Data
   Future createCategory() async {
     if (!validationForm()) {
-      print('Text field masih kosong');
+      errorMessageForm.value = 'Form kategori masih kosong';
       return;
     }
 
@@ -58,7 +62,10 @@ class ManageCategoryController extends GetxController {
         Get.back();
       },
     ).catchError(
-      (error) => print(error),
+      (err) {
+        Get.back();
+        DialogMessage.dialogErrorFromFirebase(err);
+      },
     );
   }
 
@@ -76,7 +83,10 @@ class ManageCategoryController extends GetxController {
       Get.back();
       update();
     }).catchError(
-      (error) => print(error),
+      (err) {
+        Get.back();
+        DialogMessage.dialogErrorFromFirebase(err);
+      },
     );
   }
 
@@ -87,7 +97,10 @@ class ManageCategoryController extends GetxController {
       Get.back();
       update();
     }).catchError(
-      (error) => print(error),
+      (err) {
+        Get.back();
+        DialogMessage.dialogErrorFromFirebase(err);
+      },
     );
   }
 

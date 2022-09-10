@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:kelvin_project/app/models/category.dart';
 import 'package:kelvin_project/app/models/products.dart';
 import 'package:kelvin_project/app/models/variant_product.dart';
+import 'package:kelvin_project/app/utils/dialog.dart';
 import 'package:kelvin_project/app/utils/functions.dart';
 import 'package:kelvin_project/services/firebase/firestore.service.dart';
 
@@ -147,7 +148,10 @@ class ManageProductController extends GetxController {
 
       update();
     }).catchError(
-      (error) => print(error),
+      (err) {
+        Get.back();
+        DialogMessage.dialogErrorFromFirebase(err);
+      },
     );
   }
 
@@ -185,7 +189,10 @@ class ManageProductController extends GetxController {
       update();
       Get.back();
     }).catchError(
-      (error) => print(error),
+      (err) {
+        Get.back();
+        DialogMessage.dialogErrorFromFirebase(err);
+      },
     );
   }
 
