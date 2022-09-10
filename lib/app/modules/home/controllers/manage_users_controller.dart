@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:kelvin_project/app/models/users.dart';
+import 'package:kelvin_project/app/utils/functions.dart';
 import 'package:kelvin_project/services/firebase/firestore.service.dart';
 import 'package:kelvin_project/services/local/encryption.dart';
 
@@ -37,6 +38,22 @@ class ManageUsersController extends GetxController {
   // Text Editing Controller Update Password
   TextEditingController passEditTec = TextEditingController();
   TextEditingController confPassEditTec = TextEditingController();
+
+  // Search Data User
+  Future searchData(String keyword) async {
+    await FirestoreService.refUsers
+        .where('searchKeyword', arrayContains: keyword.toLowerCase())
+        .get()
+        .then((result) {
+      if (result.docs.isEmpty) {
+        return;
+      }
+
+      isLoading.toggle();
+      listUsers.clear();
+      fetchUsers(result);
+    });
+  }
 
   // Read User Data
   Future<QuerySnapshot> readUserData() async {
@@ -76,7 +93,6 @@ class ManageUsersController extends GetxController {
     }
 
     final encPass = EncryptionService.encryptAES(pass);
-    // final resultDec = EncryptionService.decryptAES(resultEnc);
 
     UserModel newUser = UserModel(
       username: username,
@@ -84,6 +100,7 @@ class ManageUsersController extends GetxController {
       role: roleUserAdd!,
       password: encPass,
       createdAt: FirestoreService.timeStamp,
+      searchKeyword: Functions.generateSearchKeyword(sentence: username),
     );
 
     await FirestoreService.refUsers.add(newUser).then((val) {
@@ -175,11 +192,19 @@ class ManageUsersController extends GetxController {
   }
 
   // Check User Data
-  Future checkEmail(String emailAddress) async {
+  Future<QuerySnapshot> checkEmail(String emailAddress) async {
     return await FirestoreService.refUsers
         .where('email', isEqualTo: emailAddress)
         .limit(1)
         .get();
+  }
+
+  // Refresh Data
+  Future refreshData() async {
+    isLoading.toggle();
+    listUsers.clear();
+    final result = await readUserData();
+    fetchUsers(result);
   }
 
   // Validation Form Add
@@ -245,6 +270,9 @@ class ManageUsersController extends GetxController {
         role: doc['role'],
         password: doc['password'],
         createdAt: doc['createdAt'],
+        searchKeyword: List.from(
+          doc['searchKeyword'],
+        ),
       );
 
       user.idDocument = doc.id;
@@ -252,14 +280,5 @@ class ManageUsersController extends GetxController {
     }
     isLoading.toggle();
     update();
-  }
-
-  @override
-  void onInit() async {
-    isLoading.toggle();
-    final result = await readUserData();
-    fetchUsers(result);
-
-    super.onInit();
   }
 }

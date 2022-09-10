@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:kelvin_project/app/globals/constant.dart';
+import 'package:kelvin_project/app/utils/constant.dart';
 import 'package:kelvin_project/app/models/detail_transaction.dart';
 import 'package:kelvin_project/app/models/products.dart';
 import 'package:kelvin_project/app/models/transaction.dart';
@@ -46,6 +46,28 @@ class ManageTransactionController extends GetxController {
   final codeTrans = ''.obs;
   final totalPayTransDetail = 0.obs;
   List<DetailTransactionModel> listDetailTransDialog = [];
+
+  // Search Data Product
+  Future searchData(String keyword) async {
+    isLoadingTableData.toggle();
+    update();
+
+    await FirestoreService.refTransaction
+        .doc(keyword)
+        .get()
+        .then((result) async {
+      listDataTable.clear();
+      TransactionModel transactionModel = TransactionModel(
+        totalPay: result['totalPay'],
+        createdAt: result['createdAt'],
+      );
+
+      transactionModel.idDocument = result.id;
+      listDataTable.add(transactionModel);
+      isLoadingTableData.toggle();
+      update();
+    });
+  }
 
   // Read All Data Transaction
   Future<QuerySnapshot> readAllTransaction() async {
@@ -380,6 +402,14 @@ class ManageTransactionController extends GetxController {
     });
   }
 
+  // Refresh Data
+  Future refreshData() async {
+    isLoadingTableData.toggle();
+    listDataTable.clear();
+    final result = await readAllTransaction();
+    fetchTransaction(result);
+  }
+
   // Validation Form Variant Product
   bool validationForm() {
     for (var i = 0; i < listProductForm.length; i++) {
@@ -462,13 +492,5 @@ class ManageTransactionController extends GetxController {
     }
     isLoadingTableData.toggle();
     update();
-  }
-
-  @override
-  void onInit() async {
-    isLoadingTableData.toggle();
-    final result = await readAllTransaction();
-    fetchTransaction(result);
-    super.onInit();
   }
 }
