@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:kelvin_project/app/globals/constant.dart';
+import 'package:kelvin_project/app/utils/constant.dart';
 import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
 import 'package:kelvin_project/app/routes/app_pages.dart';
 import 'package:unicons/unicons.dart';

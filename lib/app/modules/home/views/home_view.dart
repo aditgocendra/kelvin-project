@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 import 'package:kelvin_project/app/modules/home/views/screens/dashboard.dart';
 import 'package:kelvin_project/app/modules/home/views/screens/manage_category.dart';
 import 'package:kelvin_project/app/modules/home/views/screens/manage_product.dart';
 import 'package:kelvin_project/app/modules/home/views/screens/manage_transaction.dart';
 import 'package:kelvin_project/app/modules/home/views/screens/manage_users.dart';
-import 'package:kelvin_project/app/modules/home/views/screens/search_product.dart';
 import 'package:kelvin_project/app/widgets/rightbar.dart';
 import 'package:kelvin_project/app/widgets/search_top.dart';
 import 'package:kelvin_project/app/widgets/sidebar.dart';
-
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -62,9 +59,6 @@ class AdminPanel extends StatelessWidget {
                         break;
                       case 4:
                         content = ManageUsers();
-                        break;
-                      case 5:
-                        content = const SearchProduct();
                         break;
                       default:
                         content = Dashboard();

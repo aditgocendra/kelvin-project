@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:kelvin_project/app/modules/home/controllers/dashboard_controller.dart';
 import 'package:unicons/unicons.dart';
 
-import '../../../../globals/constant.dart';
+import '../../../../utils/constant.dart';
 
 class Dashboard extends StatelessWidget {
   final dashboardController = Get.find<DashboardController>();
