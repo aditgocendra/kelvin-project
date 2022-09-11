@@ -93,6 +93,7 @@ class NavItemSidebar extends StatelessWidget {
                 }
 
                 controller.indexContent.value = index;
+                controller.setDataTable();
               },
               leading: Icon(
                 icon,
@@ -144,6 +145,7 @@ class NavItemSidebar extends StatelessWidget {
                 }
 
                 controller.indexContent.value = index;
+                controller.setDataTable();
               },
               child: Column(
                 children: [

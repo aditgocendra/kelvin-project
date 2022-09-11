@@ -46,7 +46,7 @@ class SearchWidget extends StatelessWidget {
           },
           onChanged: (value) {
             if (value.isEmpty) {
-              homeController.resetDataTable();
+              homeController.setDataTable();
             }
           },
           decoration: InputDecoration(

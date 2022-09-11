@@ -317,7 +317,6 @@ class ManageProductController extends GetxController {
   @override
   void onInit() async {
     addFormVariant();
-
     // Set data category
     streamCategory();
 

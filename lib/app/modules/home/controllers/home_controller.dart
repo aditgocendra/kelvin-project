@@ -58,7 +58,7 @@ class HomeController extends GetxController {
     }
   }
 
-  Future resetDataTable() async {
+  void setDataTable() {
     switch (indexContent.value) {
       case 2:
         mCtgController.refreshData();
