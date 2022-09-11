@@ -20,15 +20,17 @@ class ManageCategoryController extends GetxController {
 
   // Search Data Category
   Future searchData(String keyword) async {
+    isLoading.toggle();
     await FirestoreService.refCategory
         .where('searchKeyword', arrayContains: keyword.toLowerCase())
         .get()
         .then((result) {
       if (result.docs.isEmpty) {
+        isLoading.toggle();
+        DialogMessage.dialogSearchNotFound('kategori');
         return;
       }
 
-      isLoading.toggle();
       listCategory.clear();
       fetchCategory(result);
     });

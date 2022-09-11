@@ -51,12 +51,17 @@ class ManageTransactionController extends GetxController {
   // Search Data Product
   Future searchData(String keyword) async {
     isLoadingTableData.toggle();
-    update();
 
     await FirestoreService.refTransaction
         .doc(keyword)
         .get()
         .then((result) async {
+      if (!result.exists) {
+        isLoadingTableData.toggle();
+        DialogMessage.dialogSearchNotFound('transaksi');
+        return;
+      }
+
       listDataTable.clear();
       TransactionModel transactionModel = TransactionModel(
         totalPay: result['totalPay'],

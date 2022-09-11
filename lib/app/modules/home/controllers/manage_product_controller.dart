@@ -37,15 +37,18 @@ class ManageProductController extends GetxController {
 
   // Search Data Product
   Future searchData(String keyword) async {
+    isLoading.toggle();
     await FirestoreService.refProduct
         .where('searchKeyword', arrayContains: keyword.toLowerCase())
         .get()
         .then((result) {
       if (result.docs.isEmpty) {
+        isLoading.toggle();
+        DialogMessage.dialogSearchNotFound('produk');
+
         return;
       }
 
-      isLoading.toggle();
       listProduct.clear();
       fetchProduct(result);
     });
