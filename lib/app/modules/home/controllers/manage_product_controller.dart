@@ -295,11 +295,10 @@ class ManageProductController extends GetxController {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((event) {
+      categoryData.clear();
       if (event.docs.isEmpty) {
         return;
       }
-
-      categoryData.clear();
 
       for (var doc in event.docs) {
         final ctg = CategoryModel(
