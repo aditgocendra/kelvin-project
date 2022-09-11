@@ -16,6 +16,5 @@ class SharedPrefService {
   Future removeCache() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.remove('username');
-    pref.remove('isLoggedIn');
   }
 }

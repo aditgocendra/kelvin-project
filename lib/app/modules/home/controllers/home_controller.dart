@@ -33,9 +33,9 @@ class HomeController extends GetxController {
   List<TransactionModel> listLastTransaction = [];
   final timeClock = DateFormat.Hm().format(DateTime.now()).obs;
 
-  void logout() {
-    pref.removeCache();
-    Get.offAndToNamed(Routes.LOGIN);
+  Future logout() async {
+    await pref.removeCache();
+    Get.offNamedUntil(Routes.LOGIN, (route) => false);
   }
 
   void search() {
@@ -106,6 +106,11 @@ class HomeController extends GetxController {
   @override
   void onInit() async {
     final result = await pref.readCache();
+
+    if (result == null) {
+      Get.offNamedUntil(Routes.LOGIN, (route) => false);
+      return;
+    }
     username.value = result;
 
     streamLastTransaction();

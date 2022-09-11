@@ -87,7 +87,7 @@ class User extends StatelessWidget {
                 cancelTextColor: primaryColor,
                 onConfirm: () {
                   Get.back();
-                  Get.offAndToNamed(Routes.LOGIN);
+                  homeController.logout();
                 },
                 onCancel: () => Get.back(),
               );
