@@ -948,9 +948,8 @@ class TransactionTable extends StatelessWidget {
                                   SizedBox(
                                     width: constraints.maxWidth / 4,
                                     child: Center(
-                                      child: Text(
+                                      child: SelectableText(
                                         value.idDocument!,
-                                        maxLines: 3,
                                       ),
                                     ),
                                   ),
