@@ -42,15 +42,17 @@ class ManageUsersController extends GetxController {
 
   // Search Data User
   Future searchData(String keyword) async {
+    isLoading.toggle();
     await FirestoreService.refUsers
         .where('searchKeyword', arrayContains: keyword.toLowerCase())
         .get()
         .then((result) {
       if (result.docs.isEmpty) {
+        isLoading.toggle();
+        DialogMessage.dialogSearchNotFound('pengguna');
         return;
       }
 
-      isLoading.toggle();
       listUsers.clear();
       fetchUsers(result);
     });

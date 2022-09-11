@@ -18,7 +18,6 @@ class ManageTransaction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size.width;
-    mTransactionCtl.refreshData();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -948,9 +947,8 @@ class TransactionTable extends StatelessWidget {
                                   SizedBox(
                                     width: constraints.maxWidth / 4,
                                     child: Center(
-                                      child: Text(
+                                      child: SelectableText(
                                         value.idDocument!,
-                                        maxLines: 3,
                                       ),
                                     ),
                                   ),

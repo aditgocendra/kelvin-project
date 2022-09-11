@@ -19,7 +19,6 @@ class ManageProduct extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size.width;
-    mProductController.refreshData();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -968,7 +967,7 @@ class ProductTable extends StatelessWidget {
                               SizedBox(
                                 width: constraints.maxWidth / 8,
                                 child: Center(
-                                  child: Text(val.idDocument!),
+                                  child: SelectableText(val.idDocument!),
                                 ),
                               ),
                             ),
@@ -1053,6 +1052,22 @@ class ProductTable extends StatelessWidget {
                                     ),
                                     InkWell(
                                       onTap: () async {
+                                        if (mProductController
+                                            .categoryData.isEmpty) {
+                                          Get.defaultDialog(
+                                            contentPadding:
+                                                const EdgeInsets.all(32),
+                                            title: 'Kategori Kosong',
+                                            middleText:
+                                                'Yahh kamu belum bisa nambahin produk nih, Tambahin kategori dulu yaa :)',
+                                            textConfirm: 'Ok',
+                                            buttonColor: primaryColor,
+                                            confirmTextColor: Colors.white,
+                                            onConfirm: () => Get.back(),
+                                          );
+                                          return;
+                                        }
+
                                         mProductController.resetEditingCtl();
 
                                         await mProductController

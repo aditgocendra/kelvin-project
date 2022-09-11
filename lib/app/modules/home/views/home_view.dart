@@ -15,7 +15,14 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AdminPanel(),
+      body: Obx(
+        () {
+          if (controller.username.value.isEmpty) {
+            return Container();
+          }
+          return AdminPanel();
+        },
+      ),
     );
   }
 }
@@ -27,55 +34,53 @@ class AdminPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double screenSize = MediaQuery.of(context).size.width;
-    return Scaffold(
-      body: Row(
-        children: [
-          // Sidebar
+    return Row(
+      children: [
+        // Sidebar
+        const Expanded(
+          child: Sidebar(),
+        ),
+        // Content
+        Expanded(
+          flex: 5,
+          child: ListView(
+            controller: ScrollController(),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SearchWidget(),
+              ),
+              Obx(
+                () {
+                  Widget content;
+                  switch (controller.indexContent.value) {
+                    case 1:
+                      content = ManageProduct();
+                      break;
+                    case 2:
+                      content = ManageCategory();
+                      break;
+                    case 3:
+                      content = ManageTransaction();
+                      break;
+                    case 4:
+                      content = ManageUsers();
+                      break;
+                    default:
+                      content = Dashboard();
+                  }
+                  return content;
+                },
+              )
+            ],
+          ),
+        ),
+        // Rightbar
+        if (screenSize > 1100)
           const Expanded(
-            child: Sidebar(),
+            child: Rightbar(),
           ),
-          // Content
-          Expanded(
-            flex: 5,
-            child: ListView(
-              controller: ScrollController(),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SearchWidget(),
-                ),
-                Obx(
-                  () {
-                    Widget content;
-                    switch (controller.indexContent.value) {
-                      case 1:
-                        content = ManageProduct();
-                        break;
-                      case 2:
-                        content = ManageCategory();
-                        break;
-                      case 3:
-                        content = ManageTransaction();
-                        break;
-                      case 4:
-                        content = ManageUsers();
-                        break;
-                      default:
-                        content = Dashboard();
-                    }
-                    return content;
-                  },
-                )
-              ],
-            ),
-          ),
-          // Rightbar
-          if (screenSize > 1100)
-            const Expanded(
-              child: Rightbar(),
-            ),
-        ],
-      ),
+      ],
     );
   }
 }

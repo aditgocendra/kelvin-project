@@ -37,15 +37,18 @@ class ManageProductController extends GetxController {
 
   // Search Data Product
   Future searchData(String keyword) async {
+    isLoading.toggle();
     await FirestoreService.refProduct
         .where('searchKeyword', arrayContains: keyword.toLowerCase())
         .get()
         .then((result) {
       if (result.docs.isEmpty) {
+        isLoading.toggle();
+        DialogMessage.dialogSearchNotFound('produk');
+
         return;
       }
 
-      isLoading.toggle();
       listProduct.clear();
       fetchProduct(result);
     });
@@ -295,11 +298,10 @@ class ManageProductController extends GetxController {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((event) {
+      categoryData.clear();
       if (event.docs.isEmpty) {
         return;
       }
-
-      categoryData.clear();
 
       for (var doc in event.docs) {
         final ctg = CategoryModel(
@@ -318,7 +320,6 @@ class ManageProductController extends GetxController {
   @override
   void onInit() async {
     addFormVariant();
-
     // Set data category
     streamCategory();
 

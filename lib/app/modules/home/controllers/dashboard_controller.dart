@@ -42,6 +42,8 @@ class DashboardController extends GetxController {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((event) {
+      listDashboardMenu[0]['value'] = 0;
+      listDashboardMenu[0]['last_update'] = '';
       if (event.docs.isEmpty) {
         return;
       }
@@ -62,11 +64,11 @@ class DashboardController extends GetxController {
         .limit(5)
         .snapshots()
         .listen((event) {
+      listNewProduct.clear();
       if (event.docs.isEmpty) {
         return;
       }
 
-      listNewProduct.clear();
       // Set Product
       for (var doc in event.docs) {
         final product = ProductModel(
@@ -92,10 +94,11 @@ class DashboardController extends GetxController {
         .limit(5)
         .snapshots()
         .listen((event) {
+      listStockProduct.clear();
       if (event.docs.isEmpty) {
         return;
       }
-      listStockProduct.clear();
+
       // Set Product
       for (var doc in event.docs) {
         final product = ProductModel(
@@ -121,11 +124,11 @@ class DashboardController extends GetxController {
         .limit(5)
         .snapshots()
         .listen((event) {
+      listSoldProduct.clear();
       if (event.docs.isEmpty) {
         return;
       }
 
-      listSoldProduct.clear();
       // Set Product
       for (var doc in event.docs) {
         final product = ProductModel(
@@ -151,6 +154,8 @@ class DashboardController extends GetxController {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((event) {
+      listDashboardMenu[1]['value'] = 0;
+      listDashboardMenu[1]['last_update'] = '';
       if (event.docs.isEmpty) {
         return;
       }
@@ -169,6 +174,8 @@ class DashboardController extends GetxController {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((event) {
+      listDashboardMenu[2]['value'] = 0;
+      listDashboardMenu[2]['last_update'] = '';
       if (event.docs.isEmpty) {
         return;
       }
@@ -187,6 +194,9 @@ class DashboardController extends GetxController {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((event) {
+      listDashboardMenu[3]['value'] = 0;
+      listDashboardMenu[3]['last_update'] = '';
+
       if (event.docs.isEmpty) {
         return;
       }
