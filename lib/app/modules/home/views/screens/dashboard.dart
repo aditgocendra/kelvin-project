@@ -81,6 +81,15 @@ class Dashboard extends StatelessWidget {
                     GetBuilder(
                       init: dashboardController,
                       builder: (_) {
+                        if (dashboardController.listSoldProduct.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Belum ada satupun produk.',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          );
+                        }
                         return Column(
                           children: dashboardController.listSoldProduct
                               .asMap()
@@ -138,6 +147,15 @@ class Dashboard extends StatelessWidget {
                     GetBuilder(
                       init: dashboardController,
                       builder: (_) {
+                        if (dashboardController.listStockProduct.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Belum ada satupun produk.',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          );
+                        }
                         return Column(
                           children: dashboardController.listStockProduct
                               .asMap()
@@ -196,6 +214,15 @@ class Dashboard extends StatelessWidget {
                     GetBuilder(
                       init: dashboardController,
                       builder: (_) {
+                        if (dashboardController.listStockProduct.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Belum ada satupun produk.',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          );
+                        }
                         return Column(
                           children: dashboardController.listNewProduct
                               .asMap()
