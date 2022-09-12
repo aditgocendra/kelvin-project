@@ -44,7 +44,7 @@ class App extends StatelessWidget {
               ),
         ),
       ),
-      initialRoute: user == null ? Routes.LOGIN : AppPages.INITIAL,
+      initialRoute: user[0] == null ? Routes.LOGIN : AppPages.INITIAL,
       getPages: AppPages.routes,
     );
   }

@@ -22,6 +22,7 @@ class HomeController extends GetxController {
   // Local Storage Shared Pref
   final SharedPrefService pref = SharedPrefService();
   final username = ''.obs;
+  final userRole = ''.obs;
 
   // Logged in
   final isLogin = false.obs;
@@ -111,8 +112,9 @@ class HomeController extends GetxController {
       Get.offNamedUntil(Routes.LOGIN, (route) => false);
       return;
     }
-    username.value = result;
 
+    username.value = result[0];
+    userRole.value = result[1];
     streamLastTransaction();
 
     // Clock

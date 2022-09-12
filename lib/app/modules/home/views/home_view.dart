@@ -37,7 +37,7 @@ class AdminPanel extends StatelessWidget {
     return Row(
       children: [
         // Sidebar
-        const Expanded(
+        Expanded(
           child: Sidebar(),
         ),
         // Content
