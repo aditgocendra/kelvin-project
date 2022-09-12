@@ -128,6 +128,7 @@ class ManageUsersController extends GetxController {
       email: user.email,
       role: roleUserEdit!,
       password: user.password,
+      searchKeyword: Functions.generateSearchKeyword(sentence: newUsername),
       createdAt: user.createdAt,
     );
 
@@ -171,6 +172,7 @@ class ManageUsersController extends GetxController {
       email: user.email,
       role: user.role,
       password: resultEnc,
+      searchKeyword: Functions.generateSearchKeyword(sentence: user.username),
       createdAt: user.createdAt,
     );
 
@@ -178,6 +180,7 @@ class ManageUsersController extends GetxController {
         .doc(user.idDocument)
         .set(newDataUser)
         .then((value) {
+      newDataUser.idDocument = user.idDocument;
       listUsers[listUsers.indexWhere(
         (doc) => doc.idDocument == user.idDocument,
       )] = newDataUser;
