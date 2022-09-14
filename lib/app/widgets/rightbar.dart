@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:kelvin_project/app/utils/constant.dart';
 import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
-import 'package:kelvin_project/app/routes/app_pages.dart';
 import 'package:unicons/unicons.dart';
 
 class Rightbar extends StatelessWidget {
@@ -101,7 +100,7 @@ class User extends StatelessWidget {
               style: TextStyle(fontSize: 10),
             ),
             style: ElevatedButton.styleFrom(
-              primary: primaryColor,
+              backgroundColor: primaryColor,
               elevation: 0.5,
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(
