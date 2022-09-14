@@ -108,7 +108,7 @@ class HomeController extends GetxController {
   void onInit() async {
     final result = await pref.readCache();
 
-    if (result == null) {
+    if (result[0] == null) {
       Get.offNamedUntil(Routes.LOGIN, (route) => false);
       return;
     }
