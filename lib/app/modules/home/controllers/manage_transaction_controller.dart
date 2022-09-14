@@ -302,18 +302,7 @@ class ManageTransactionController extends GetxController {
       Get.back();
     }).catchError((err) {
       Get.back();
-      Get.defaultDialog(
-        contentPadding: const EdgeInsets.all(32),
-        title: 'Kesalahan ${err.hashCode.toString()}',
-        middleText:
-            'Terjadi kesalahan tak terduga, silahkan coba kembali nanti',
-        textConfirm: 'Ok',
-        buttonColor: primaryColor,
-        confirmTextColor: Colors.white,
-        onConfirm: () {
-          Get.back();
-        },
-      );
+      DialogMessage.dialogErrorFromFirebase(err);
     });
   }
 
