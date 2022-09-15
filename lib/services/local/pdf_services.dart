@@ -304,7 +304,7 @@ class PdfService {
                                 children: detailTrans.variant!
                                     .map(
                                       (val) => dataCellCustom(
-                                        val,
+                                        val['variantName'],
                                         pw.FontWeight.normal,
                                       ),
                                     )

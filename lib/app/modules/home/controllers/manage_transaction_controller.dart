@@ -17,6 +17,9 @@ class ManageTransactionController extends GetxController {
   final isLoadingTableData = false.obs;
   final isLoadingReportPdf = false.obs;
 
+  // Selected Variant
+  VariantProductModel? onSelectedVariant;
+
   // Range Picker Pdf Report
   List<DateTime?> initRangeDatePicker = [
     DateTime.now(),
@@ -97,7 +100,7 @@ class ManageTransactionController extends GetxController {
       DetailTransactionModel detailTransactionModel = DetailTransactionModel(
         productName: doc['productName'],
         price: doc['price'],
-        variant: List<String>.from(doc['variant']),
+        variant: List<Map<String, dynamic>>.from(doc['variant']),
       );
 
       detailTransactionModel.idDocument = doc.id;
@@ -171,9 +174,7 @@ class ManageTransactionController extends GetxController {
     // Add Form Product
     listProductForm.add({
       'product': product,
-      'variantSelected': [
-        listVariantProduct[0],
-      ],
+      'variantSelected': [],
       'variantProduct': listVariantProduct,
     });
 
@@ -214,18 +215,24 @@ class ManageTransactionController extends GetxController {
       for (var i = 0; i < listProductForm.length; i++) {
         ProductModel productModel = listProductForm[i]['product'];
         int totalProductBuy = 0;
-        List<String> variantSelect = [];
+        List<Map<String, dynamic>> variantSelect = [];
 
-        for (VariantProductModel element in listProductForm[i]
-            ['variantSelected']) {
-          variantSelect.add('${element.color} | ${element.size}');
-          totalProductBuy++;
+        for (var element in listProductForm[i]['variantSelected']) {
+          variantSelect.add(
+            {
+              'variantName':
+                  '${element['variant'].color} | ${element['variant'].size}',
+              'totalBuy': element['totalBuy']
+            },
+          );
 
+          int total = element['totalBuy'];
           await updateVariantProduct(
             productModel.idDocument,
-            element.idDocument,
-            element.stock - 1,
+            element['variant'].idDocument,
+            element['variant'].stock - total,
           );
+          totalProductBuy += total;
         }
 
         await setDetailTransaction(
@@ -252,7 +259,7 @@ class ManageTransactionController extends GetxController {
   Future setDetailTransaction(
     String codeTransaction,
     ProductModel product,
-    List<String> variant,
+    List<Map<String, dynamic>> variant,
   ) async {
     DetailTransactionModel detailTrans = DetailTransactionModel(
       productName: product.productName,
@@ -344,9 +351,10 @@ class ManageTransactionController extends GetxController {
 
         for (var docDetailTrans in result.docs) {
           DetailTransactionModel detailTrans = DetailTransactionModel(
-              productName: docDetailTrans['productName'],
-              price: docDetailTrans['price'],
-              variant: List<String>.from(docDetailTrans['variant']));
+            productName: docDetailTrans['productName'],
+            price: docDetailTrans['price'],
+            variant: List<Map<String, dynamic>>.from(docDetailTrans['variant']),
+          );
 
           detailTrans.idDocument = docDetailTrans.id;
           listDetailTrans.add(detailTrans);
@@ -397,11 +405,14 @@ class ManageTransactionController extends GetxController {
   // Validation Form Variant Product
   bool validationForm() {
     for (var i = 0; i < listProductForm.length; i++) {
-      for (var j = 0; j < listProductForm[i]['variantSelected'].length; j++) {
-        if (listProductForm[i]['variantSelected'][j] == '') {
-          return false;
-        }
+      if (listProductForm[i]['variantSelected'].length == 0) {
+        return false;
       }
+      // for (var j = 0; j < listProductForm[i]['variantSelected'].length; j++) {
+      //   if (listProductForm[i]['variantSelected'][j] == '') {
+      //     return false;
+      //   }
+      // }
     }
     return true;
   }
@@ -425,8 +436,9 @@ class ManageTransactionController extends GetxController {
     double price = 0;
 
     for (var i = 0; i < listProductForm.length; i++) {
-      price += listProductForm[i]['product'].price *
-          listProductForm[i]['variantSelected'].length;
+      for (var element in listProductForm[i]['variantSelected']) {
+        price += listProductForm[i]['product'].price * element['totalBuy'];
+      }
     }
 
     totalPay.value = price.toInt();
@@ -434,11 +446,34 @@ class ManageTransactionController extends GetxController {
 
   // Add Field Variant
   void addFieldVariant(int indexProduct) {
-    final variantSelected = listProductForm[indexProduct]['variantSelected'];
+    List<dynamic> variantSelected =
+        listProductForm[indexProduct]['variantSelected'];
 
-    final variantProduct = listProductForm[indexProduct]['variantProduct'][0];
+    final variantProduct = onSelectedVariant;
 
-    variantSelected.add(variantProduct);
+    // Check Same Variant
+    final variantProductIsSelect = variantSelected.where((element) =>
+        element['variant'].idDocument == onSelectedVariant!.idDocument);
+
+    if (variantProductIsSelect.isNotEmpty) {
+      return;
+    }
+
+    if (variantSelected.length >=
+        listProductForm[indexProduct]['variantProduct'].length) {
+      return;
+    }
+
+    if (variantProduct!.stock < 1) {
+      errorMessageForm.value = 'Varian produk ini tidak memiliki stok';
+      return;
+    }
+
+    variantSelected.add({
+      'variant': variantProduct,
+      'totalBuy': 1,
+    });
+
     listProductForm[indexProduct]['variantSelected'] = variantSelected;
     updateTotalPay();
 
@@ -460,6 +495,7 @@ class ManageTransactionController extends GetxController {
 
   // Reset Form Product
   void resetFormProduct() {
+    errorMessageForm.value = '';
     listProductForm.clear();
     codeProductTec.clear();
   }

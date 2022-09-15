@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class DetailTransactionModel {
   String productName;
   int price;
-  List<String>? variant;
+  List<Map<String, dynamic>>? variant;
   String? idDocument;
 
   DetailTransactionModel({
