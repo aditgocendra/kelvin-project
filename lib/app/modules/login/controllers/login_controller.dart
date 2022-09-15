@@ -60,7 +60,7 @@ class LoginController extends GetxController {
     }
 
     // Set Preferences Data
-    prefService.createCache(userData['username']);
+    prefService.createCache(userData['username'], userData['role']);
 
     // Login Success
     Get.offAndToNamed(Routes.HOME);

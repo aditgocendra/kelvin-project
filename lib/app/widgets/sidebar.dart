@@ -4,7 +4,8 @@ import 'package:kelvin_project/app/utils/constant.dart';
 import 'package:kelvin_project/app/modules/home/controllers/home_controller.dart';
 
 class Sidebar extends StatelessWidget {
-  const Sidebar({Key? key}) : super(key: key);
+  final homeController = Get.find<HomeController>();
+  Sidebar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,15 +30,17 @@ class Sidebar extends StatelessWidget {
               children: listNavItem
                   .asMap()
                   .map(
-                    (index, navItem) => MapEntry(
-                      index,
-                      NavItemSidebar(
-                        title: listNavItem[index]['title'],
-                        icon: listNavItem[index]['icon'],
-                        index: index,
-                        screenSize: screenSize,
-                      ),
-                    ),
+                    (index, navItem) {
+                      return MapEntry(
+                        index,
+                        NavItemSidebar(
+                          title: listNavItem[index]['title'],
+                          icon: listNavItem[index]['icon'],
+                          index: index,
+                          screenSize: screenSize,
+                        ),
+                      );
+                    },
                   )
                   .values
                   .toList(),
@@ -50,22 +53,38 @@ class Sidebar extends StatelessWidget {
 }
 
 class NavItemSidebar extends StatelessWidget {
-  final title;
-  final icon;
-  final index;
-  final screenSize;
-  final controller = Get.find<HomeController>();
+  String title;
+  IconData icon;
+  int index;
+  double screenSize;
+  final homeController = Get.find<HomeController>();
 
-  NavItemSidebar(
-      {Key? key,
-      required this.title,
-      required this.icon,
-      required this.index,
-      required this.screenSize})
-      : super(key: key);
+  NavItemSidebar({
+    Key? key,
+    required this.title,
+    required this.icon,
+    required this.index,
+    required this.screenSize,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    if (homeController.userRole.value == 'Admin' && index == 3) {
+      return Container();
+    }
+
+    if (homeController.userRole.value == 'Kasir' && index == 1) {
+      return Container();
+    }
+
+    if (homeController.userRole.value == 'Kasir' && index == 2) {
+      return Container();
+    }
+
+    if (homeController.userRole.value == 'Kasir' && index == 4) {
+      return Container();
+    }
+
     if (screenSize > 1060) {
       return Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -85,20 +104,20 @@ class NavItemSidebar extends StatelessWidget {
                     cancelTextColor: primaryColor,
                     onConfirm: () {
                       Get.back();
-                      controller.logout();
+                      homeController.logout();
                     },
                     onCancel: () => Get.back(),
                   );
                   return;
                 }
 
-                controller.indexContent.value = index;
-                controller.setDataTable();
+                homeController.indexContent.value = index;
+                homeController.setDataTable();
               },
               leading: Icon(
                 icon,
                 size: 20,
-                color: controller.indexContent.value == index
+                color: homeController.indexContent.value == index
                     ? primaryColor
                     : Colors.black87,
               ),
@@ -106,7 +125,7 @@ class NavItemSidebar extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontSize: 12,
-                  color: controller.indexContent.value == index
+                  color: homeController.indexContent.value == index
                       ? primaryColor
                       : Colors.black87,
                 ),
@@ -137,22 +156,22 @@ class NavItemSidebar extends StatelessWidget {
                     cancelTextColor: primaryColor,
                     onConfirm: () {
                       Get.back();
-                      controller.logout();
+                      homeController.logout();
                     },
                     onCancel: () => Get.back(),
                   );
                   return;
                 }
 
-                controller.indexContent.value = index;
-                controller.setDataTable();
+                homeController.indexContent.value = index;
+                homeController.setDataTable();
               },
               child: Column(
                 children: [
                   Icon(
                     icon,
                     size: 24,
-                    color: controller.indexContent.value == index
+                    color: homeController.indexContent.value == index
                         ? primaryColor
                         : Colors.black87,
                   ),
@@ -164,7 +183,7 @@ class NavItemSidebar extends StatelessWidget {
                     maxLines: 1,
                     style: TextStyle(
                       fontSize: 10,
-                      color: controller.indexContent.value == index
+                      color: homeController.indexContent.value == index
                           ? primaryColor
                           : Colors.black87,
                     ),

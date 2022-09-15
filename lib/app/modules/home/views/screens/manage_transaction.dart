@@ -383,7 +383,7 @@ class DialogFormTransaction extends StatelessWidget {
                   mTransactionCtl.createTransaction();
                 },
                 style: ElevatedButton.styleFrom(
-                  primary: primaryColor,
+                  backgroundColor: primaryColor,
                   elevation: 0.5,
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(
@@ -518,17 +518,9 @@ class DialogDetailTransaction extends StatelessWidget {
                                 'Kode Produk : ${mTransactionCtl.listDetailTransDialog[index].idDocument}',
                                 style: const TextStyle(fontSize: 12),
                               ),
-                              trailing: Text(
-                                '${mTransactionCtl.listDetailTransDialog[index].variant!.length} Unit',
-                                style: const TextStyle(
-                                  color: primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
                             ),
                             Container(
                               margin: const EdgeInsets.all(16),
-                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 border: Border.all(color: primaryColor),
                                 borderRadius: const BorderRadius.all(
@@ -540,10 +532,18 @@ class DialogDetailTransaction extends StatelessWidget {
                                 children: mTransactionCtl
                                     .listDetailTransDialog[index].variant!
                                     .map(
-                                      (val) => Text(
-                                        'Varian : $val',
-                                        style: const TextStyle(
-                                          fontSize: 12,
+                                      (val) => ListTile(
+                                        title: Text(
+                                          'Varian : ${val['variantName']}',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        trailing: Text(
+                                          'Jumlah Beli : ${val['totalBuy']}',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                          ),
                                         ),
                                       ),
                                     )
@@ -685,7 +685,7 @@ class FormProductTransaction extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade400),
         borderRadius: const BorderRadius.all(
@@ -711,37 +711,76 @@ class FormProductTransaction extends StatelessWidget {
               ),
               style: const TextStyle(fontSize: 11),
             ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    mTransactionCtl.addFieldVariant(indexProduct);
-                  },
-                  icon: const Icon(
-                    UniconsLine.plus_circle,
-                    color: primaryColor,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    mTransactionCtl.removeFieldVariant(indexProduct);
-                  },
-                  icon: const Icon(
-                    UniconsLine.minus_circle,
-                    color: primaryColor,
-                  ),
-                ),
-              ],
-            ),
           ),
+
+          Row(
+            children: [
+              Flexible(
+                child: DropdownSearch<VariantProductModel>(
+                  items: mTransactionCtl.listProductForm[indexProduct]
+                      ['variantProduct'],
+                  compareFn: (i, s) => i.isEqual(s),
+                  itemAsString: (VariantProductModel variant) =>
+                      variant.variantAsString(),
+                  onChanged: (VariantProductModel? value) {
+                    mTransactionCtl.onSelectedVariant = value;
+                  },
+                  popupProps: PopupProps.menu(
+                    showSelectedItems: true,
+                    fit: FlexFit.loose,
+                    menuProps: const MenuProps(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0.5,
+                    ),
+                    containerBuilder: (ctx, popupWidget) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const SizedBox(
+                            height: 12,
+                          ),
+                          Flexible(
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(12.0),
+                                ),
+                              ),
+                              child: popupWidget,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  dropdownDecoratorProps: GlobalStyles.dropdownDecoration(
+                    'Pilih Varian Produk',
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  if (mTransactionCtl.onSelectedVariant != null) {
+                    mTransactionCtl.addFieldVariant(indexProduct);
+                  }
+                },
+                icon: const Icon(
+                  UniconsLine.plus_circle,
+                  color: primaryColor,
+                ),
+              ),
+            ],
+          ),
+
           // Variant Field
           ListView.builder(
             itemCount: mTransactionCtl
                 .listProductForm[indexProduct]['variantSelected'].length,
             shrinkWrap: true,
             primary: false,
-            itemBuilder: (context, index) => FormProductVariantTransaction(
+            itemBuilder: (context, index) => FormVariantTransaction(
                 indexProduct: indexProduct, indexVariant: index),
           ),
           const SizedBox(
@@ -757,7 +796,7 @@ class FormProductTransaction extends StatelessWidget {
                   mTransactionCtl.update();
                 },
                 style: ElevatedButton.styleFrom(
-                  primary: primaryColor,
+                  backgroundColor: primaryColor,
                   elevation: 0.5,
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(
@@ -770,13 +809,6 @@ class FormProductTransaction extends StatelessWidget {
                   style: TextStyle(fontSize: 11),
                 ),
               ),
-              Text(
-                'Jumlah : ${mTransactionCtl.listProductForm[indexProduct]['variantSelected'].length}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ],
           )
         ],
@@ -785,65 +817,92 @@ class FormProductTransaction extends StatelessWidget {
   }
 }
 
-class FormProductVariantTransaction extends StatelessWidget {
+class FormVariantTransaction extends StatelessWidget {
   final mTransactionCtl = Get.find<ManageTransactionController>();
   int indexProduct;
   int indexVariant;
-
-  FormProductVariantTransaction({
-    Key? key,
+  FormVariantTransaction({
     required this.indexProduct,
     required this.indexVariant,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: DropdownSearch<VariantProductModel>(
-        selectedItem: mTransactionCtl.listProductForm[indexProduct]
-            ['variantSelected'][indexVariant],
-        items: mTransactionCtl.listProductForm[indexProduct]['variantProduct'],
-        compareFn: (i, s) => i.isEqual(s),
-        itemAsString: (VariantProductModel variant) =>
-            variant.variantAsString(),
-        onChanged: (VariantProductModel? value) {
-          mTransactionCtl.listProductForm[indexProduct]['variantSelected']
-              [indexVariant] = value;
-        },
-        popupProps: PopupProps.menu(
-          showSelectedItems: true,
-          fit: FlexFit.loose,
-          menuProps: const MenuProps(
-            backgroundColor: Colors.transparent,
-            elevation: 0.5,
+    VariantProductModel variant = mTransactionCtl.listProductForm[indexProduct]
+        ['variantSelected'][indexVariant]['variant'];
+
+    final totalBuy = mTransactionCtl.listProductForm[indexProduct]
+        ['variantSelected'][indexVariant]['totalBuy'];
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade400),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(12),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '${variant.color}|${variant.size}',
           ),
-          containerBuilder: (ctx, popupWidget) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const SizedBox(
-                  height: 12,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                onPressed: () {
+                  if (totalBuy >= variant.stock) {
+                    return;
+                  }
+
+                  mTransactionCtl.listProductForm[indexProduct]
+                      ['variantSelected'][indexVariant]['totalBuy']++;
+
+                  mTransactionCtl.updateTotalPay();
+                  mTransactionCtl.update();
+                },
+                icon: const Icon(
+                  UniconsLine.plus_circle,
+                  color: primaryColor,
                 ),
-                Flexible(
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(12.0),
-                      ),
-                    ),
-                    child: popupWidget,
-                  ),
+              ),
+              SizedBox(
+                width: 20,
+                child: Text(
+                  mTransactionCtl.listProductForm[indexProduct]
+                          ['variantSelected'][indexVariant]['totalBuy']
+                      .toString(),
+                  textAlign: TextAlign.center,
                 ),
-              ],
-            );
-          },
-        ),
-        dropdownDecoratorProps: GlobalStyles.dropdownDecoration(
-          'Pilih Varian Produk',
-        ),
+              ),
+              IconButton(
+                onPressed: () {
+                  if (totalBuy <= 1) {
+                    mTransactionCtl.listProductForm[indexProduct]
+                            ['variantSelected']
+                        .removeAt(indexVariant);
+                    mTransactionCtl.update();
+                    return;
+                  }
+
+                  mTransactionCtl.listProductForm[indexProduct]
+                      ['variantSelected'][indexVariant]['totalBuy']--;
+                  mTransactionCtl.updateTotalPay();
+                  mTransactionCtl.update();
+                },
+                icon: const Icon(
+                  UniconsLine.minus_circle,
+                  color: primaryColor,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
