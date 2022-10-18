@@ -566,7 +566,7 @@ class FormVariantProduct extends StatelessWidget {
             height: 16,
           ),
           DropdownSearch<String>(
-            items: const ['S', 'M', 'L', 'XL', 'XXL'],
+            items: const ['S', 'M', 'L', 'XL', 'XXL', 'ALL SIZE'],
             selectedItem: mProductController.listVariantFormCtl[index]
                 ['sizeSelected'],
             onChanged: (String? value) {
