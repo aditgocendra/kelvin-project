@@ -238,156 +238,153 @@ class PdfService {
     pw.Context context,
     List<TransactionReport> transactionReportData,
   ) {
-    return pw.Column(children: [
-      pw.Column(
-        children: transactionReportData
-            .map(
-              (trans) => pw.Container(
-                margin: const pw.EdgeInsets.only(top: 8),
-                decoration: const pw.BoxDecoration(
-                  border: pw.Border(
-                    bottom: pw.BorderSide(
-                      width: 1.0,
-                      color: PdfColors.green400,
-                    ),
+    return pw.Column(
+      children: transactionReportData
+          .map(
+            (trans) => pw.Container(
+              margin: const pw.EdgeInsets.only(top: 8),
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(
+                  bottom: pw.BorderSide(
+                    width: 1.0,
+                    color: PdfColors.green400,
                   ),
                 ),
-                child: pw.Row(
-                  children: [
-                    // Code Transaction
-                    pw.Expanded(
-                      fit: pw.FlexFit.loose,
-                      child: pw.Container(
-                        child: dataCellCustom(
-                          trans.codeTransaction,
-                          pw.FontWeight.normal,
-                        ),
+              ),
+              child: pw.Row(
+                children: [
+                  // Code Transaction
+                  pw.Expanded(
+                    fit: pw.FlexFit.loose,
+                    child: pw.Container(
+                      child: dataCellCustom(
+                        trans.codeTransaction,
+                        pw.FontWeight.normal,
                       ),
                     ),
-                    // Product
-                    pw.Expanded(
-                      child: pw.Column(
-                        mainAxisSize: pw.MainAxisSize.max,
-                        children: trans.detailTrans.map(
-                          (detailTrans) {
-                            return pw.Column(
-                              children: [
-                                pw.Container(
-                                  padding: pw.EdgeInsets.symmetric(
-                                    horizontal: 4,
-                                    vertical:
-                                        (5.8 * detailTrans.variant!.length)
-                                            .toDouble(),
-                                  ),
-                                  child: dataCellCustom(
-                                    detailTrans.productName,
-                                    pw.FontWeight.normal,
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ).toList(),
-                      ),
-                    ),
-                    // Varian
-                    pw.Expanded(
-                      child: pw.Column(
-                        children: trans.detailTrans.map(
-                          (detailTrans) {
-                            return pw.Container(
-                              padding: const pw.EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 5.5,
-                              ),
-                              child: pw.Column(
-                                children: detailTrans.variant!
-                                    .map(
-                                      (val) => dataCellCustom(
-                                        val['variantName'],
-                                        pw.FontWeight.normal,
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                            );
-                          },
-                        ).toList(),
-                      ),
-                    ),
-                    // Harga
-                    pw.Expanded(
-                      child: pw.Column(
-                        children: trans.detailTrans
-                            .map(
-                              (detailTrans) => pw.Container(
+                  ),
+                  // Product
+                  pw.Expanded(
+                    child: pw.Column(
+                      mainAxisSize: pw.MainAxisSize.max,
+                      children: trans.detailTrans.map(
+                        (detailTrans) {
+                          return pw.Column(
+                            children: [
+                              pw.Container(
                                 padding: pw.EdgeInsets.symmetric(
                                   horizontal: 4,
                                   vertical: (5.8 * detailTrans.variant!.length)
                                       .toDouble(),
                                 ),
                                 child: dataCellCustom(
-                                  NumberFormat.currency(
-                                    locale: 'id',
-                                    symbol: 'Rp. ',
-                                    decimalDigits: 0,
-                                  ).format(
-                                    detailTrans.price,
-                                  ),
+                                  detailTrans.productName,
                                   pw.FontWeight.normal,
                                 ),
                               ),
-                            )
-                            .toList(),
-                      ),
+                            ],
+                          );
+                        },
+                      ).toList(),
                     ),
-                    // Total Item Buy
-                    pw.Expanded(
-                      child: pw.Column(
-                        children: trans.detailTrans
-                            .map(
-                              (val) => pw.Container(
-                                padding: pw.EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical:
-                                      (5.8 * val.variant!.length).toDouble(),
-                                ),
-                                child: dataCellCustom(
-                                  '${val.variant!.length} Unit',
-                                  pw.FontWeight.normal,
-                                ),
+                  ),
+                  // Varian
+                  pw.Expanded(
+                    child: pw.Column(
+                      children: trans.detailTrans.map(
+                        (detailTrans) {
+                          return pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 5.5,
+                            ),
+                            child: pw.Column(
+                              children: detailTrans.variant!
+                                  .map(
+                                    (val) => dataCellCustom(
+                                      val['variantName'],
+                                      pw.FontWeight.normal,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          );
+                        },
+                      ).toList(),
+                    ),
+                  ),
+                  // Harga
+                  pw.Expanded(
+                    child: pw.Column(
+                      children: trans.detailTrans
+                          .map(
+                            (detailTrans) => pw.Container(
+                              padding: pw.EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: (5.8 * detailTrans.variant!.length)
+                                    .toDouble(),
                               ),
-                            )
-                            .toList(),
-                      ),
+                              child: dataCellCustom(
+                                NumberFormat.currency(
+                                  locale: 'id',
+                                  symbol: 'Rp. ',
+                                  decimalDigits: 0,
+                                ).format(
+                                  detailTrans.price,
+                                ),
+                                pw.FontWeight.normal,
+                              ),
+                            ),
+                          )
+                          .toList(),
                     ),
-                    // Date Transaction
-                    pw.Expanded(
-                      child: dataCellCustom(
-                        DateFormat.yMd().format(trans.dateTransaction.toDate()),
-                        pw.FontWeight.normal,
-                      ),
+                  ),
+                  // Total Item Buy
+                  pw.Expanded(
+                    child: pw.Column(
+                      children: trans.detailTrans
+                          .map(
+                            (val) => pw.Container(
+                              padding: pw.EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical:
+                                    (5.8 * val.variant!.length).toDouble(),
+                              ),
+                              child: dataCellCustom(
+                                '${val.variant!.length} Unit',
+                                pw.FontWeight.normal,
+                              ),
+                            ),
+                          )
+                          .toList(),
                     ),
-                    // Price Item
-                    pw.Expanded(
-                      child: dataCellCustom(
-                        NumberFormat.currency(
-                          locale: 'id',
-                          symbol: 'Rp. ',
-                          decimalDigits: 0,
-                        ).format(
-                          trans.totalPay,
-                        ),
-                        pw.FontWeight.normal,
-                      ),
+                  ),
+                  // Date Transaction
+                  pw.Expanded(
+                    child: dataCellCustom(
+                      DateFormat.yMd().format(trans.dateTransaction.toDate()),
+                      pw.FontWeight.normal,
                     ),
-                  ],
-                ),
+                  ),
+                  // Price Item
+                  pw.Expanded(
+                    child: dataCellCustom(
+                      NumberFormat.currency(
+                        locale: 'id',
+                        symbol: 'Rp. ',
+                        decimalDigits: 0,
+                      ).format(
+                        trans.totalPay,
+                      ),
+                      pw.FontWeight.normal,
+                    ),
+                  ),
+                ],
               ),
-            )
-            .toList(),
-      )
-    ]);
+            ),
+          )
+          .toList(),
+    );
   }
 
   static pw.Widget dataCellCustom(String text, pw.FontWeight fontWeight) {
