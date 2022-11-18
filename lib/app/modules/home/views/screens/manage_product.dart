@@ -350,6 +350,7 @@ class DialogFormProduct extends StatelessWidget {
                 child: TextField(
                   controller: mProductController.codeProductTec,
                   textCapitalization: TextCapitalization.characters,
+                  maxLength: 4,
                   readOnly: action ? true : false,
                   style: const TextStyle(fontSize: 14),
                   cursorColor: primaryColor,

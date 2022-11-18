@@ -7,6 +7,7 @@ import 'package:kelvin_project/firebase_options.dart';
 import 'package:kelvin_project/services/local/shared_pref.dart';
 
 import 'app/routes/app_pages.dart';
+import 'package:dcdg/dcdg.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
