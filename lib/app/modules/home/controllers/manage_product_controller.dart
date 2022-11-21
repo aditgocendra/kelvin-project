@@ -89,6 +89,8 @@ class ManageProductController extends GetxController {
 
   // Create Data Product
   Future setProduct() async {
+    errFormMessage.value = '';
+
     int allStock = 0;
 
     if (!validationFormProduct()) {
@@ -112,6 +114,22 @@ class ManageProductController extends GetxController {
     }
 
     final codeProduct = codeProductTec.text.trim();
+
+    // Validation Code Product
+    final result = codeProduct.substring(1);
+    try {
+      // check 3 code after last
+      int.parse(result);
+    } catch (e) {
+      errFormMessage.value = 'Format kode produk salah';
+      return;
+    }
+
+    if (!codeProduct.substring(0, 1).contains(RegExp(r'[A-Z]'))) {
+      errFormMessage.value = 'Format kode produk salah';
+      return;
+    }
+
     final nameProduct = nameProductTec.text.trim();
     final price = priceTec.text.trim();
 
