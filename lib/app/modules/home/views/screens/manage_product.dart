@@ -182,7 +182,11 @@ class ManageProduct extends StatelessWidget {
                           return;
                         }
                         PdfService.buildPdf(
-                            true, mProductController.listProduct, '');
+                          true,
+                          mProductController.listProduct,
+                          '-',
+                          '',
+                        );
                       },
                       child: Container(
                         decoration: const BoxDecoration(

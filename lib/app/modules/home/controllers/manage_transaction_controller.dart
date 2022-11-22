@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:kelvin_project/app/models/stock_product.dart';
 import 'package:kelvin_project/app/utils/constant.dart';
 import 'package:kelvin_project/app/models/detail_transaction.dart';
 import 'package:kelvin_project/app/models/products.dart';
@@ -242,6 +243,7 @@ class ManageTransactionController extends GetxController {
         );
 
         productModel.sold = productModel.sold + totalProductBuy;
+        await updateStockProduct(productModel.idDocument!, totalProductBuy);
         // productModel.allStock = productModel.allStock - totalProductBuy;
         await updateProduct(productModel);
       }
@@ -252,6 +254,27 @@ class ManageTransactionController extends GetxController {
     }).catchError((err) {
       Get.back();
       DialogMessage.dialogErrorFromFirebase(err);
+    });
+  }
+
+  Future updateStockProduct(String idDoc, int totalProductBuy) async {
+    await FirestoreService.refSubCollectionStockProduct(
+      idDoc: idDoc,
+      collection: 'products',
+      subCollectionPath: 'stock',
+    ).orderBy('createdAt', descending: true).limit(1).get().then((value) async {
+      StockProductModel stockProductModel = StockProductModel(
+        stock: value.docs[0]['stock'] - totalProductBuy,
+        createdAt: value.docs[0]['createdAt'],
+      );
+
+      await FirestoreService.refSubCollectionStockProduct(
+        idDoc: idDoc,
+        collection: 'products',
+        subCollectionPath: 'stock',
+      ).doc(value.docs[0].id).set(stockProductModel);
+    }).catchError((err) {
+      print(err);
     });
   }
 
@@ -314,19 +337,11 @@ class ManageTransactionController extends GetxController {
   }
 
   // Generate Pdf Transaction
-  Future generatePdfTransaction() async {
-    if (datePickRangeTrans.isEmpty || datePickRangeTrans.length <= 1) {
-      errorMessageReport.value = 'Rentang tanggal belum dipilih';
-      return;
-    }
+  Future generatePdfTransaction(DateTime? dateTime) async {
+    final timestamp = Timestamp.fromDate(dateTime!);
 
-    isLoadingReportPdf.toggle();
-
-    // Get Transaction Data
     await FirestoreService.refTransaction
-        .orderBy('createdAt')
-        .where('createdAt', isGreaterThanOrEqualTo: datePickRangeTrans[0])
-        .where('createdAt', isLessThanOrEqualTo: datePickRangeTrans[1])
+        .orderBy('createdAt', descending: true)
         .get()
         .then((result) async {
       if (result.docs.isEmpty) {
@@ -335,9 +350,15 @@ class ManageTransactionController extends GetxController {
             'Tidak ada transaksi di rentang tanggal tersebut';
         return;
       }
+
       List<TransactionReport> listReportTransaction = [];
 
       for (var docTrans in result.docs) {
+        if (DateFormat.yMMM('id').format(docTrans['createdAt'].toDate()) !=
+            DateFormat.yMMM('id').format(timestamp.toDate())) {
+          continue;
+        }
+
         TransactionReport transReport;
 
         // Detail Transaction
@@ -370,15 +391,113 @@ class ManageTransactionController extends GetxController {
         listReportTransaction.add(transReport);
       }
 
-      String fromToDate =
-          '${DateFormat.yMd().format(datePickRangeTrans[0]!)} - ${DateFormat.yMd().format(datePickRangeTrans[1]!)}';
+      String periode = DateFormat.yMMM('id').format(timestamp.toDate());
 
-      await PdfService.buildPdf(false, listReportTransaction, fromToDate);
+      if (listReportTransaction.isEmpty) {
+        Get.defaultDialog(
+          contentPadding: const EdgeInsets.all(32),
+          title: 'Transaksi tidak ditemukan',
+          middleText: 'Tidak ditemukan transaksi pada bulan yang dipilih',
+          textConfirm: 'Ok',
+          buttonColor: primaryColor,
+          confirmTextColor: Colors.white,
+          onConfirm: () {
+            Get.back();
+          },
+        );
+        return;
+      }
+
+      List<String> listCodeProduct = [];
+      List<ProductReportModel> listProductReport = [];
+
+      for (var transReport in listReportTransaction) {
+        final listDetailTrans = transReport.detailTrans;
+
+        for (var detailTrans in listDetailTrans) {
+          if (listCodeProduct.isEmpty) {
+            listCodeProduct.add(detailTrans.idDocument!);
+
+            final result = await FirestoreService.refProduct
+                .doc(detailTrans.idDocument)
+                .get();
+
+            if (!result.exists) {
+              continue;
+            }
+
+            ProductModel product = result.data()!;
+            final stockProduct =
+                await FirestoreService.refSubCollectionStockProduct(
+              idDoc: result.id,
+              collection: 'products',
+              subCollectionPath: 'stock',
+            ).orderBy('createdAt', descending: true).limit(1).get();
+
+            ProductReportModel productReportModel = ProductReportModel(
+              productName: product.productName,
+              price: product.price,
+              stock: stockProduct.docs[0]['stock'],
+              idCategory: product.idCategory,
+              sold: product.sold,
+              createdAt: product.createdAt,
+              searchKeyword: product.searchKeyword,
+            );
+
+            listProductReport.add(productReportModel);
+          } else {
+            final code = listCodeProduct
+                .where((element) => element == detailTrans.idDocument!);
+            if (code.isNotEmpty) {
+              continue;
+            } else {
+              listCodeProduct.add(detailTrans.idDocument!);
+
+              final result = await FirestoreService.refProduct
+                  .doc(detailTrans.idDocument)
+                  .get();
+
+              if (!result.exists) {
+                continue;
+              }
+
+              ProductModel product = result.data()!;
+              final stockProduct =
+                  await FirestoreService.refSubCollectionStockProduct(
+                idDoc: result.id,
+                collection: 'products',
+                subCollectionPath: 'stock',
+              ).orderBy('createdAt', descending: true).limit(1).get();
+
+              ProductReportModel productReportModel = ProductReportModel(
+                productName: product.productName,
+                price: product.price,
+                stock: stockProduct.docs[0]['stock'],
+                idCategory: product.idCategory,
+                sold: product.sold,
+                createdAt: product.createdAt,
+                searchKeyword: product.searchKeyword,
+              );
+
+              listProductReport.add(productReportModel);
+            }
+          }
+        }
+      }
+
+      await PdfService.buildPdf(
+        false,
+        listReportTransaction,
+        listProductReport,
+        periode,
+      );
+
       isLoadingReportPdf.toggle();
       Get.back();
     }).catchError((err) {
       isLoadingReportPdf.toggle();
       Get.back();
+      print(err);
       Get.defaultDialog(
         contentPadding: const EdgeInsets.all(32),
         title: 'Kesalahan ${err.hashCode.toString()}',
@@ -392,6 +511,84 @@ class ManageTransactionController extends GetxController {
         },
       );
     });
+
+    // if (datePickRangeTrans.isEmpty || datePickRangeTrans.length <= 1) {
+    //   errorMessageReport.value = 'Rentang tanggal belum dipilih';
+    //   return;
+    // }
+
+    // isLoadingReportPdf.toggle();
+
+    // // Get Transaction Data
+    // await FirestoreService.refTransaction
+    //     .orderBy('createdAt')
+    //     .where('createdAt', isGreaterThanOrEqualTo: datePickRangeTrans[0])
+    //     .where('createdAt', isLessThanOrEqualTo: datePickRangeTrans[1])
+    //     .get()
+    //     .then((result) async {
+    //   if (result.docs.isEmpty) {
+    //     isLoadingReportPdf.toggle();
+    //     errorMessageReport.value =
+    //         'Tidak ada transaksi di rentang tanggal tersebut';
+    //     return;
+    //   }
+    //   List<TransactionReport> listReportTransaction = [];
+
+    //   for (var docTrans in result.docs) {
+    //     TransactionReport transReport;
+
+    //     // Detail Transaction
+    //     final result = await FirestoreService.refSubCollectionDetailTransaction(
+    //       idDoc: docTrans.id,
+    //       collection: 'transactions',
+    //       subCollectionPath: 'detailTransaction',
+    //     ).get();
+
+    //     List<DetailTransactionModel> listDetailTrans = [];
+
+    //     for (var docDetailTrans in result.docs) {
+    //       DetailTransactionModel detailTrans = DetailTransactionModel(
+    //         productName: docDetailTrans['productName'],
+    //         price: docDetailTrans['price'],
+    //         variant: List<Map<String, dynamic>>.from(docDetailTrans['variant']),
+    //       );
+
+    //       detailTrans.idDocument = docDetailTrans.id;
+    //       listDetailTrans.add(detailTrans);
+    //     }
+
+    //     transReport = TransactionReport(
+    //       codeTransaction: docTrans.id,
+    //       detailTrans: listDetailTrans,
+    //       dateTransaction: docTrans['createdAt'],
+    //       totalPay: docTrans['totalPay'],
+    //     );
+
+    //     listReportTransaction.add(transReport);
+    //   }
+
+    //   String fromToDate =
+    //       '${DateFormat.yMd().format(datePickRangeTrans[0]!)} - ${DateFormat.yMd().format(datePickRangeTrans[1]!)}';
+
+    //   await PdfService.buildPdf(false, listReportTransaction, fromToDate);
+    //   isLoadingReportPdf.toggle();
+    //   Get.back();
+    // }).catchError((err) {
+    //   isLoadingReportPdf.toggle();
+    //   Get.back();
+    //   Get.defaultDialog(
+    //     contentPadding: const EdgeInsets.all(32),
+    //     title: 'Kesalahan ${err.hashCode.toString()}',
+    //     middleText:
+    //         'Terjadi kesalahan tak terduga, silahkan coba kembali nanti',
+    //     textConfirm: 'Ok',
+    //     buttonColor: primaryColor,
+    //     confirmTextColor: Colors.white,
+    //     onConfirm: () {
+    //       Get.back();
+    //     },
+    //   );
+    // });
   }
 
   // Refresh Data

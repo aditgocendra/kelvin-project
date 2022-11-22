@@ -375,6 +375,7 @@ class ManageProductController extends GetxController {
     PdfService.buildPdf(
       true,
       listProductReport,
+      '-',
       DateFormat.yMMM('id').format(
         timestamp.toDate(),
       ),
