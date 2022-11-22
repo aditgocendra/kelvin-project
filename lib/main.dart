@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:kelvin_project/app/utils/constant.dart';
 import 'package:kelvin_project/firebase_options.dart';
 import 'package:kelvin_project/services/local/shared_pref.dart';
-
+import 'package:month_year_picker/month_year_picker.dart';
 import 'app/routes/app_pages.dart';
 import 'package:dcdg/dcdg.dart';
 
@@ -36,6 +37,9 @@ class App extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Point Of Sale",
+      localizationsDelegates: [
+        MonthYearPickerLocalizations.delegate,
+      ],
       theme: ThemeData(
         backgroundColor: Colors.grey.shade100,
         canvasColor: Colors.white,

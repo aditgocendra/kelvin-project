@@ -143,7 +143,7 @@ class ManageTransactionController extends GetxController {
     ProductModel product = ProductModel(
       productName: resultProduct.get('productName'),
       price: resultProduct.get('price'),
-      allStock: resultProduct.get('allStock'),
+      // allStock: resultProduct.get('allStock'),
       sold: resultProduct.get('sold'),
       idCategory: resultProduct.get('idCategory'),
       searchKeyword: List<String>.from(resultProduct.get('searchKeyword')),
@@ -242,7 +242,7 @@ class ManageTransactionController extends GetxController {
         );
 
         productModel.sold = productModel.sold + totalProductBuy;
-        productModel.allStock = productModel.allStock - totalProductBuy;
+        // productModel.allStock = productModel.allStock - totalProductBuy;
         await updateProduct(productModel);
       }
 

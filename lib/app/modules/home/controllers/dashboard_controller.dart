@@ -74,7 +74,7 @@ class DashboardController extends GetxController {
         final product = ProductModel(
           productName: doc['productName'],
           price: doc['price'],
-          allStock: doc['allStock'],
+          // allStock: doc['allStock'],
           idCategory: doc['idCategory'],
           sold: doc['sold'],
           createdAt: doc['createdAt'],
@@ -104,7 +104,7 @@ class DashboardController extends GetxController {
         final product = ProductModel(
           productName: doc['productName'],
           price: doc['price'],
-          allStock: doc['allStock'],
+          // allStock: doc['allStock'],
           idCategory: doc['idCategory'],
           sold: doc['sold'],
           createdAt: doc['createdAt'],
@@ -134,7 +134,7 @@ class DashboardController extends GetxController {
         final product = ProductModel(
           productName: doc['productName'],
           price: doc['price'],
-          allStock: doc['allStock'],
+          // allStock: doc['allStock'],
           idCategory: doc['idCategory'],
           sold: doc['sold'],
           createdAt: doc['createdAt'],
