@@ -14,8 +14,11 @@ class PdfService {
 
   static String? logo;
   static String? dateHeader;
+  static List<ProductReportModel>? listProduct;
 
-  static Future buildPdf(bool content, dynamic data, String date) async {
+  static Future buildPdf(
+      bool content, dynamic data, dynamic data2, String date) async {
+    listProduct = data2;
     dateHeader = date;
     final doc = pw.Document();
 
@@ -43,7 +46,9 @@ class PdfService {
           // contentHeader(context),
           content
               ? contentTableProduct(context, data)
-              : contentTableTransaction(context, data)
+              : contentTableTransaction(context, data),
+          pw.SizedBox(height: 32),
+          if (content == false) contentBottomTransaction()
         ],
       ),
     );
@@ -104,54 +109,72 @@ class PdfService {
     pw.Context context,
     List<ProductReportModel> listReportProduct,
   ) {
+    int totalStockAllProduct = 0;
+    for (var element in listReportProduct) {
+      totalStockAllProduct += element.stock;
+    }
+
     const tableHeaders = [
       'Nama Produk',
       'Harga',
       'Semua Stok',
     ];
 
-    return pw.Table.fromTextArray(
-      border: null,
-      cellAlignment: pw.Alignment.centerLeft,
-      headerDecoration: const pw.BoxDecoration(
-        borderRadius: pw.BorderRadius.all(pw.Radius.circular(2)),
-        color: PdfColors.green500,
-      ),
-      headerHeight: 25,
-      cellHeight: 40,
-      cellAlignments: {
-        0: pw.Alignment.centerLeft,
-        1: pw.Alignment.center,
-        2: pw.Alignment.center,
-      },
-      headerStyle: pw.TextStyle(
-        color: PdfColors.white,
-        fontSize: 10,
-        fontWeight: pw.FontWeight.bold,
-      ),
-      cellStyle: const pw.TextStyle(
-        color: PdfColors.black,
-        fontSize: 10,
-      ),
-      rowDecoration: const pw.BoxDecoration(
-        border: pw.Border(
-          bottom: pw.BorderSide(
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+      children: [
+        pw.Table.fromTextArray(
+          border: null,
+          cellAlignment: pw.Alignment.centerLeft,
+          headerDecoration: const pw.BoxDecoration(
+            borderRadius: pw.BorderRadius.all(pw.Radius.circular(2)),
             color: PdfColors.green500,
-            width: .5,
+          ),
+          headerHeight: 25,
+          cellHeight: 40,
+          cellAlignments: {
+            0: pw.Alignment.centerLeft,
+            1: pw.Alignment.center,
+            2: pw.Alignment.center,
+          },
+          headerStyle: pw.TextStyle(
+            color: PdfColors.white,
+            fontSize: 10,
+            fontWeight: pw.FontWeight.bold,
+          ),
+          cellStyle: const pw.TextStyle(
+            color: PdfColors.black,
+            fontSize: 10,
+          ),
+          rowDecoration: const pw.BoxDecoration(
+            border: pw.Border(
+              bottom: pw.BorderSide(
+                color: PdfColors.green500,
+                width: .5,
+              ),
+            ),
+          ),
+          headers: List<String>.generate(
+            tableHeaders.length,
+            (col) => tableHeaders[col],
+          ),
+          data: List<List<String>>.generate(
+            listReportProduct.length,
+            (row) => List<String>.generate(
+              tableHeaders.length,
+              (col) => listReportProduct[row].getIndex(col),
+            ),
           ),
         ),
-      ),
-      headers: List<String>.generate(
-        tableHeaders.length,
-        (col) => tableHeaders[col],
-      ),
-      data: List<List<String>>.generate(
-        listReportProduct.length,
-        (row) => List<String>.generate(
-          tableHeaders.length,
-          (col) => listReportProduct[row].getIndex(col),
+        pw.SizedBox(
+          height: 24,
         ),
-      ),
+        pw.Text(
+          'Total Seluruh Stok Produk : $totalStockAllProduct',
+          style: const pw.TextStyle(fontSize: 10),
+          textAlign: pw.TextAlign.right,
+        ),
+      ],
     );
   }
 
@@ -353,15 +376,21 @@ class PdfService {
                     child: pw.Column(
                       children: trans.detailTrans
                           .map(
-                            (val) => pw.Container(
+                            (detailTrans) => pw.Container(
                               padding: pw.EdgeInsets.symmetric(
                                 horizontal: 4,
-                                vertical:
-                                    (5.8 * val.variant!.length).toDouble(),
+                                vertical: (5.8 * detailTrans.variant!.length)
+                                    .toDouble(),
                               ),
-                              child: dataCellCustom(
-                                '${val.variant!.length} Unit',
-                                pw.FontWeight.normal,
+                              child: pw.Column(
+                                children: detailTrans.variant!
+                                    .map(
+                                      (val) => dataCellCustom(
+                                        val['totalBuy'].toString(),
+                                        pw.FontWeight.normal,
+                                      ),
+                                    )
+                                    .toList(),
                               ),
                             ),
                           )
@@ -393,6 +422,89 @@ class PdfService {
             ),
           )
           .toList(),
+    );
+  }
+
+  static pw.Widget contentBottomTransaction() {
+    return pw.Column(
+      children: [
+        pw.Container(
+          padding: const pw.EdgeInsets.symmetric(vertical: 8),
+          decoration: const pw.BoxDecoration(
+            border: pw.Border(
+              top: pw.BorderSide(
+                width: 1.0,
+                color: PdfColors.green400,
+              ),
+              bottom: pw.BorderSide(
+                width: 1.0,
+                color: PdfColors.green400,
+              ),
+            ),
+          ),
+          child: pw.Row(
+            children: [
+              pw.Expanded(
+                child: dataCellCustom(
+                  'Produk',
+                  pw.FontWeight.bold,
+                ),
+              ),
+              pw.Expanded(
+                child: dataCellCustom(
+                  'Terjual',
+                  pw.FontWeight.bold,
+                ),
+              ),
+              pw.Expanded(
+                child: dataCellCustom(
+                  'Sisa Stok Barang',
+                  pw.FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        pw.Column(
+          children: listProduct!.map(
+            (val) {
+              return pw.Container(
+                padding: const pw.EdgeInsets.symmetric(vertical: 8),
+                decoration: const pw.BoxDecoration(
+                  border: pw.Border(
+                    bottom: pw.BorderSide(
+                      width: 1.0,
+                      color: PdfColors.green400,
+                    ),
+                  ),
+                ),
+                child: pw.Row(
+                  children: [
+                    pw.Expanded(
+                      child: dataCellCustom(
+                        val.productName,
+                        pw.FontWeight.normal,
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: dataCellCustom(
+                        val.sold.toString(),
+                        pw.FontWeight.normal,
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: dataCellCustom(
+                        val.stock.toString(),
+                        pw.FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ).toList(),
+        ),
+      ],
     );
   }
 

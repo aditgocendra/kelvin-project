@@ -8,6 +8,7 @@ import 'package:kelvin_project/app/utils/styles.dart';
 import 'package:kelvin_project/app/models/variant_product.dart';
 import 'package:kelvin_project/app/modules/home/controllers/manage_transaction_controller.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:unicons/unicons.dart';
 
@@ -41,12 +42,21 @@ class ManageTransaction extends StatelessWidget {
                     Row(
                       children: [
                         InkWell(
-                          onTap: () {
+                          onTap: () async {
                             mTransactionCtl.errorMessageReport.value = '';
-                            showDialog(
+                            // showDialog(
+                            //   context: context,
+                            //   builder: (context) => DialogPdfReport(),
+                            // );
+
+                            final selected = await showMonthYearPicker(
                               context: context,
-                              builder: (context) => DialogPdfReport(),
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2021),
+                              lastDate: DateTime(2030),
                             );
+
+                            mTransactionCtl.generatePdfTransaction(selected);
                           },
                           child: Container(
                             decoration: const BoxDecoration(
@@ -645,7 +655,7 @@ class DialogPdfReport extends StatelessWidget {
                   }
                   return ElevatedButton(
                     onPressed: () {
-                      mTransactionCtl.generatePdfTransaction();
+                      // mTransactionCtl.generatePdfTransaction();
                     },
                     style: ElevatedButton.styleFrom(
                       primary: primaryColor,
