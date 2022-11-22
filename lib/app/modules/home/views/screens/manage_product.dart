@@ -1,14 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:kelvin_project/app/models/month.dart';
 import 'package:kelvin_project/app/utils/constant.dart';
 import 'package:kelvin_project/app/utils/styles.dart';
 import 'package:kelvin_project/app/models/category.dart';
 import 'package:kelvin_project/app/models/products.dart';
 import 'package:kelvin_project/app/modules/home/controllers/manage_product_controller.dart';
 import 'package:kelvin_project/services/local/pdf_services.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:unicons/unicons.dart';
 
@@ -43,12 +46,24 @@ class ManageProduct extends StatelessWidget {
                     Row(
                       children: [
                         InkWell(
-                          onTap: () {
+                          onTap: () async {
                             if (mProductController.listProduct.isEmpty) {
                               return;
                             }
-                            PdfService.buildPdf(
-                                true, mProductController.listProduct, '');
+                            final selected = await showMonthYearPicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2021),
+                              lastDate: DateTime(2030),
+                            );
+
+                            if (selected == null) {
+                              return;
+                            }
+
+                            mProductController.generateReportPDF(
+                              Timestamp.fromDate(selected),
+                            );
                           },
                           child: Container(
                             decoration: const BoxDecoration(
@@ -789,26 +804,6 @@ class DialogVariantProduct extends StatelessWidget {
                   children: [
                     const Expanded(
                       child: Text(
-                        'Stok Produk',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        '${product.allStock} Unit',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const Expanded(
-                      child: Text(
                         'Produk Terjual',
                         style: TextStyle(fontSize: 14),
                       ),
@@ -865,6 +860,144 @@ class DialogVariantProduct extends StatelessWidget {
                         .toList(),
                   );
                 },
+              ),
+              const Text(
+                'Semua Stok Produk',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              //Stock per month
+              GetBuilder(
+                init: mProductController,
+                builder: (ctl) {
+                  return Column(
+                    children: mProductController.listStockProduct
+                        .map(
+                          (val) => Container(
+                            margin: const EdgeInsets.only(top: 16, bottom: 16),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: primaryColor),
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(16),
+                              ),
+                            ),
+                            child: ListTile(
+                              title: Text(
+                                DateFormat('MMM', 'id').format(
+                                  val.createdAt.toDate(),
+                                ),
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              trailing: Text(
+                                '${val.stock} Unit',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class DialogMonthPicker extends StatelessWidget {
+  final mProductController = Get.find<ManageProductController>();
+
+  DialogMonthPicker({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(16),
+        ),
+      ),
+      elevation: 0.5,
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: 800,
+        padding: const EdgeInsets.all(32),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(
+            Radius.circular(16),
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              DropdownSearch<Month>(
+                items: monthData,
+                compareFn: (i, s) => i.isEqual(s),
+                itemAsString: (Month month) => month.AsString(),
+                onChanged: (Month? value) {
+                  // mProductController.idCategorySelected = value!.idDocument;
+                },
+                popupProps: PopupProps.menu(
+                  showSelectedItems: true,
+                  fit: FlexFit.loose,
+                  menuProps: const MenuProps(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0.5,
+                  ),
+                  containerBuilder: (ctx, popupWidget) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const SizedBox(
+                          height: 16,
+                        ),
+                        Flexible(
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(12.0),
+                              ),
+                            ),
+                            child: popupWidget,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                dropdownDecoratorProps: GlobalStyles.dropdownDecoration(
+                  'Pilih Bulan',
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              ElevatedButton(
+                onPressed: () async {},
+                style: ElevatedButton.styleFrom(
+                  primary: primaryColor,
+                  elevation: 0.5,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(10),
+                    ),
+                  ),
+                  minimumSize: const Size.fromHeight(50),
+                ),
+                child: const Text(
+                  'Cetak',
+                  style: TextStyle(fontSize: 14),
+                ),
               )
             ],
           ),
@@ -948,13 +1081,6 @@ class ProductTable extends StatelessWidget {
                       DataColumn(
                         label: Expanded(
                           child: Center(
-                            child: Text('Stok Produk'),
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Expanded(
-                          child: Center(
                             child: Text('Aksi'),
                           ),
                         ),
@@ -974,7 +1100,7 @@ class ProductTable extends StatelessWidget {
                             ),
                             DataCell(
                               SizedBox(
-                                width: constraints.maxWidth / 5,
+                                width: constraints.maxWidth / 4,
                                 child: Center(
                                   child: Text(val.productName),
                                 ),
@@ -982,7 +1108,7 @@ class ProductTable extends StatelessWidget {
                             ),
                             DataCell(
                               SizedBox(
-                                width: constraints.maxWidth / 7,
+                                width: constraints.maxWidth / 5,
                                 child: Center(
                                   child: Text(
                                     NumberFormat.currency(
@@ -996,16 +1122,8 @@ class ProductTable extends StatelessWidget {
                             ),
                             DataCell(
                               SizedBox(
-                                width: constraints.maxWidth / 10,
-                                child: Center(
-                                  child: Text(val.allStock.toString()),
-                                ),
-                              ),
-                            ),
-                            DataCell(
-                              SizedBox(
                                 width: screenSize > 630
-                                    ? constraints.maxWidth / 4.39
+                                    ? constraints.maxWidth / 3.8
                                     : constraints.maxWidth / 1.5,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1017,6 +1135,10 @@ class ProductTable extends StatelessWidget {
                                         );
 
                                         mProductController.readVariantProduct(
+                                          val.idDocument!,
+                                        );
+
+                                        mProductController.readStockProduct(
                                           val.idDocument!,
                                         );
 

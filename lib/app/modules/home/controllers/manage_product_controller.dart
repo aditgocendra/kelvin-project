@@ -1,12 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:kelvin_project/app/models/category.dart';
 import 'package:kelvin_project/app/models/products.dart';
+import 'package:kelvin_project/app/models/stock_product.dart';
 import 'package:kelvin_project/app/models/variant_product.dart';
 import 'package:kelvin_project/app/utils/dialog.dart';
 import 'package:kelvin_project/app/utils/functions.dart';
 import 'package:kelvin_project/services/firebase/firestore.service.dart';
+
+import '../../../../services/local/pdf_services.dart';
 
 class ManageProductController extends GetxController {
   // isLoading
@@ -31,6 +35,9 @@ class ManageProductController extends GetxController {
 
   // Variant Product
   List<VariantProductModel> listVariantProduct = [];
+
+  // Stock Product
+  List<StockProductModel> listStockProduct = [];
 
   // Category id selected
   String? idCategorySelected;
@@ -87,6 +94,26 @@ class ManageProductController extends GetxController {
     update();
   }
 
+  Future readStockProduct(String idDoc) async {
+    listStockProduct.clear();
+    final result = await FirestoreService.refSubCollectionStockProduct(
+      idDoc: idDoc,
+      collection: 'products',
+      subCollectionPath: 'stock',
+    ).get();
+
+    for (var doc in result.docs) {
+      listStockProduct.add(
+        StockProductModel(
+          stock: doc['stock'],
+          createdAt: doc['createdAt'],
+        ),
+      );
+    }
+
+    update();
+  }
+
   // Create Data Product
   Future setProduct() async {
     errFormMessage.value = '';
@@ -136,7 +163,7 @@ class ManageProductController extends GetxController {
     final newProduct = ProductModel(
       productName: nameProduct,
       price: int.parse(price),
-      allStock: allStock,
+      // allStock: allStock,
       sold: 0,
       idCategory: idCategorySelected!,
       createdAt: FirestoreService.timeStamp,
@@ -164,16 +191,64 @@ class ManageProductController extends GetxController {
         await deleteVariantProduct(codeProduct);
       }
 
+      // Create Stock Product
+      await setStockProduct(allStock, codeProduct);
+
       // Create variant product
       await createVariantProduct(codeProduct);
-
-      update();
     }).catchError(
       (err) {
         Get.back();
         DialogMessage.dialogErrorFromFirebase(err);
       },
     );
+  }
+
+  // Create Stock Product
+  Future setStockProduct(int stockProduct, String idProduct) async {
+    StockProductModel stockProductModel = StockProductModel(
+      stock: stockProduct,
+      createdAt: Timestamp.fromDate(DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+      )),
+    );
+
+    final result = await FirestoreService.refSubCollectionStockProduct(
+      idDoc: idProduct,
+      collection: 'products',
+      subCollectionPath: 'stock',
+    ).orderBy('createdAt', descending: true).limit(1).get();
+
+    if (result.docs.isEmpty) {
+      await FirestoreService.refSubCollectionStockProduct(
+              idDoc: idProduct,
+              collection: 'products',
+              subCollectionPath: 'stock')
+          .add(stockProductModel);
+    } else {
+      final timestamp = result.docs[0]['createdAt'];
+
+      if (DateFormat.yMMM('id').format(timestamp.toDate()) ==
+          DateFormat.yMMM('id').format(DateTime(
+            DateTime.now().year,
+            DateTime.now().month,
+          ))) {
+        await FirestoreService.refSubCollectionStockProduct(
+          idDoc: idProduct,
+          collection: 'products',
+          subCollectionPath: 'stock',
+        ).doc(result.docs[0].id).set(
+              stockProductModel,
+            );
+      } else {
+        await FirestoreService.refSubCollectionStockProduct(
+                idDoc: idProduct,
+                collection: 'products',
+                subCollectionPath: 'stock')
+            .add(stockProductModel);
+      }
+    }
   }
 
   // Create Data Variant Product
@@ -194,6 +269,7 @@ class ManageProductController extends GetxController {
       if (i + 1 == listVariantFormCtl.length) {
         resetEditingCtl();
         Get.back();
+        update();
         return;
       }
     }
@@ -203,6 +279,9 @@ class ManageProductController extends GetxController {
   Future deleteDataProduct(String idDoc) async {
     // Delete Variant Product
     await deleteVariantProduct(idDoc);
+
+    // Delete Stock Product
+    await deleteStockProduct(idDoc);
 
     // Delete Product
     await FirestoreService.refProduct.doc(idDoc).delete().then((value) {
@@ -230,6 +309,19 @@ class ManageProductController extends GetxController {
     }
   }
 
+  // Delete Variant Product
+  Future deleteStockProduct(String idDoc) async {
+    final result = await FirestoreService.refSubCollectionStockProduct(
+      idDoc: idDoc,
+      collection: 'products',
+      subCollectionPath: 'stock',
+    ).get();
+
+    for (var doc in result.docs) {
+      await doc.reference.delete();
+    }
+  }
+
   // Get Category Product
   Future getCategoryProduct(idDoc) async {
     final result = await FirestoreService.refCategory.doc(idDoc).get();
@@ -243,6 +335,50 @@ class ManageProductController extends GetxController {
     isLoading.toggle();
     final result = await readProduct();
     fetchProduct(result);
+  }
+
+  Future generateReportPDF(Timestamp timestamp) async {
+    List<ProductReportModel> listProductReport = [];
+
+    final data = await FirestoreService.refProduct.orderBy('createdAt').get();
+    print(data.docs.length);
+    for (var doc in data.docs) {
+      // Check Stock Product
+
+      final result = await FirestoreService.refSubCollectionStockProduct(
+        idDoc: doc.id,
+        collection: 'products',
+        subCollectionPath: 'stock',
+      ).get();
+
+      if (result.docs.isEmpty) {
+        continue;
+      }
+
+      for (var element in result.docs) {
+        if (DateFormat.yMMM('id').format(element['createdAt'].toDate()) ==
+            DateFormat.yMMM('id').format(timestamp.toDate())) {
+          ProductReportModel product = ProductReportModel(
+            productName: doc['productName'],
+            price: doc['price'],
+            stock: element['stock'],
+            idCategory: doc['idCategory'],
+            sold: doc['sold'],
+            createdAt: doc['createdAt'],
+            searchKeyword: List<String>.from(doc['searchKeyword']),
+          );
+          product.idDocument = doc.id;
+          listProductReport.add(product);
+        }
+      }
+    }
+    PdfService.buildPdf(
+      true,
+      listProductReport,
+      DateFormat.yMMM('id').format(
+        timestamp.toDate(),
+      ),
+    );
   }
 
   // Validation Form Product
@@ -287,7 +423,7 @@ class ManageProductController extends GetxController {
       ProductModel product = ProductModel(
         productName: doc['productName'],
         price: doc['price'],
-        allStock: doc['allStock'],
+        // allStock: doc['allStock'],
         idCategory: doc['idCategory'],
         sold: doc['sold'],
         createdAt: doc['createdAt'],

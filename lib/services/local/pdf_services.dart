@@ -76,6 +76,7 @@ class PdfService {
 
   static pw.Widget buildHeaderProduct(pw.Context context) {
     return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
       children: [
         pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -89,13 +90,19 @@ class PdfService {
             ),
           ],
         ),
+        pw.Text(
+          'Periode : $dateHeader',
+          style: const pw.TextStyle(fontSize: 10),
+          textAlign: pw.TextAlign.right,
+        ),
+        pw.SizedBox(height: 10),
       ],
     );
   }
 
   static pw.Widget contentTableProduct(
     pw.Context context,
-    List<ProductModel> listProduct,
+    List<ProductReportModel> listReportProduct,
   ) {
     const tableHeaders = [
       'Nama Produk',
@@ -139,10 +146,10 @@ class PdfService {
         (col) => tableHeaders[col],
       ),
       data: List<List<String>>.generate(
-        listProduct.length,
+        listReportProduct.length,
         (row) => List<String>.generate(
           tableHeaders.length,
-          (col) => listProduct[row].getIndex(col),
+          (col) => listReportProduct[row].getIndex(col),
         ),
       ),
     );
@@ -164,9 +171,11 @@ class PdfService {
             ),
           ],
         ),
-        pw.Text('Periode : $dateHeader',
-            style: const pw.TextStyle(fontSize: 10),
-            textAlign: pw.TextAlign.right),
+        pw.Text(
+          'Periode : $dateHeader',
+          style: const pw.TextStyle(fontSize: 10),
+          textAlign: pw.TextAlign.right,
+        ),
         pw.SizedBox(height: 16),
         // Header Table
         pw.Container(

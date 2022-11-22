@@ -170,7 +170,8 @@ class Dashboard extends StatelessWidget {
                                       symbol: 'Rp. ',
                                       decimalDigits: 0,
                                     ).format(value.price),
-                                    trailing: 'Stok (${value.allStock})',
+                                    // trailing: 'Stok (${value.allStock})',
+                                    trailing: 'asdsada',
                                   ),
                                 ),
                               )

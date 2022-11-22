@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kelvin_project/app/models/category.dart';
 import 'package:kelvin_project/app/models/detail_transaction.dart';
 import 'package:kelvin_project/app/models/products.dart';
+import 'package:kelvin_project/app/models/stock_product.dart';
 import 'package:kelvin_project/app/models/transaction.dart';
 import 'package:kelvin_project/app/models/users.dart';
 import 'package:kelvin_project/app/models/variant_product.dart';
@@ -37,6 +38,22 @@ abstract class FirestoreService {
           fromFirestore: UserModel.fromFirestore,
           toFirestore: (UserModel userModel, options) =>
               userModel.toFirestore());
+
+  // Reference Sub Collection
+  static CollectionReference refSubCollectionStockProduct({
+    required String idDoc,
+    required String collection,
+    required String subCollectionPath,
+  }) {
+    return FirebaseFirestore.instance
+        .collection(collection)
+        .doc(idDoc)
+        .collection(subCollectionPath)
+        .withConverter<StockProductModel>(
+            fromFirestore: StockProductModel.fromFirestore,
+            toFirestore: (StockProductModel stockProductModel, options) =>
+                stockProductModel.toFirestore());
+  }
 
   // Reference Sub Collection
   static CollectionReference refSubCollectionProduct({
