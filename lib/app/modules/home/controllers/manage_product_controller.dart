@@ -341,7 +341,7 @@ class ManageProductController extends GetxController {
     List<ProductReportModel> listProductReport = [];
 
     final data = await FirestoreService.refProduct.orderBy('createdAt').get();
-    print(data.docs.length);
+
     for (var doc in data.docs) {
       // Check Stock Product
 
@@ -375,7 +375,7 @@ class ManageProductController extends GetxController {
     PdfService.buildPdf(
       true,
       listProductReport,
-      '-',
+      listProductReport,
       DateFormat.yMMM('id').format(
         timestamp.toDate(),
       ),

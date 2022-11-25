@@ -33,6 +33,13 @@ class PdfService {
     final ttfBold = pw.Font.ttf(dataBold.buffer.asByteData());
     final ttfItalic = pw.Font.ttf(dataItalic.buffer.asByteData());
 
+    int totalStockAllProduct = 0;
+    if (content) {
+      for (var element in listProduct!) {
+        totalStockAllProduct += element.stock;
+      }
+    }
+
     doc.addPage(
       pw.MultiPage(
         pageTheme: PdfService.buildTheme(
@@ -48,7 +55,8 @@ class PdfService {
               ? contentTableProduct(context, data)
               : contentTableTransaction(context, data),
           pw.SizedBox(height: 32),
-          if (content == false) contentBottomTransaction()
+          if (content == false) contentBottomTransaction(),
+          if (content) contentBottomProduct(totalStockAllProduct),
         ],
       ),
     );
@@ -109,72 +117,54 @@ class PdfService {
     pw.Context context,
     List<ProductReportModel> listReportProduct,
   ) {
-    int totalStockAllProduct = 0;
-    for (var element in listReportProduct) {
-      totalStockAllProduct += element.stock;
-    }
-
     const tableHeaders = [
       'Nama Produk',
       'Harga',
       'Semua Stok',
     ];
 
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-      children: [
-        pw.Table.fromTextArray(
-          border: null,
-          cellAlignment: pw.Alignment.centerLeft,
-          headerDecoration: const pw.BoxDecoration(
-            borderRadius: pw.BorderRadius.all(pw.Radius.circular(2)),
+    return pw.Table.fromTextArray(
+      border: null,
+      cellAlignment: pw.Alignment.centerLeft,
+      headerDecoration: const pw.BoxDecoration(
+        borderRadius: pw.BorderRadius.all(pw.Radius.circular(2)),
+        color: PdfColors.green500,
+      ),
+      headerHeight: 25,
+      cellHeight: 40,
+      cellAlignments: {
+        0: pw.Alignment.centerLeft,
+        1: pw.Alignment.center,
+        2: pw.Alignment.center,
+      },
+      headerStyle: pw.TextStyle(
+        color: PdfColors.white,
+        fontSize: 10,
+        fontWeight: pw.FontWeight.bold,
+      ),
+      cellStyle: const pw.TextStyle(
+        color: PdfColors.black,
+        fontSize: 10,
+      ),
+      rowDecoration: const pw.BoxDecoration(
+        border: pw.Border(
+          bottom: pw.BorderSide(
             color: PdfColors.green500,
-          ),
-          headerHeight: 25,
-          cellHeight: 40,
-          cellAlignments: {
-            0: pw.Alignment.centerLeft,
-            1: pw.Alignment.center,
-            2: pw.Alignment.center,
-          },
-          headerStyle: pw.TextStyle(
-            color: PdfColors.white,
-            fontSize: 10,
-            fontWeight: pw.FontWeight.bold,
-          ),
-          cellStyle: const pw.TextStyle(
-            color: PdfColors.black,
-            fontSize: 10,
-          ),
-          rowDecoration: const pw.BoxDecoration(
-            border: pw.Border(
-              bottom: pw.BorderSide(
-                color: PdfColors.green500,
-                width: .5,
-              ),
-            ),
-          ),
-          headers: List<String>.generate(
-            tableHeaders.length,
-            (col) => tableHeaders[col],
-          ),
-          data: List<List<String>>.generate(
-            listReportProduct.length,
-            (row) => List<String>.generate(
-              tableHeaders.length,
-              (col) => listReportProduct[row].getIndex(col),
-            ),
+            width: .5,
           ),
         ),
-        pw.SizedBox(
-          height: 24,
+      ),
+      headers: List<String>.generate(
+        tableHeaders.length,
+        (col) => tableHeaders[col],
+      ),
+      data: List<List<String>>.generate(
+        listReportProduct.length,
+        (row) => List<String>.generate(
+          tableHeaders.length,
+          (col) => listReportProduct[row].getIndex(col),
         ),
-        pw.Text(
-          'Total Seluruh Stok Produk : $totalStockAllProduct',
-          style: const pw.TextStyle(fontSize: 10),
-          textAlign: pw.TextAlign.right,
-        ),
-      ],
+      ),
     );
   }
 
@@ -422,6 +412,21 @@ class PdfService {
             ),
           )
           .toList(),
+    );
+  }
+
+  static pw.Widget contentBottomProduct(int total) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+      children: [
+        pw.SizedBox(
+          height: 24,
+        ),
+        pw.Text(
+          'Total Keseluruhan Produk : $total',
+          textAlign: pw.TextAlign.right,
+        )
+      ],
     );
   }
 

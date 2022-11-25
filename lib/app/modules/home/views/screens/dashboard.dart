@@ -170,8 +170,8 @@ class Dashboard extends StatelessWidget {
                                       symbol: 'Rp. ',
                                       decimalDigits: 0,
                                     ).format(value.price),
-                                    // trailing: 'Stok (${value.allStock})',
-                                    trailing: 'asdsada',
+                                    trailing: 'Stok (${value.stock})',
+                                    // trailing: 'asdsada',
                                   ),
                                 ),
                               )
@@ -215,7 +215,7 @@ class Dashboard extends StatelessWidget {
                     GetBuilder(
                       init: dashboardController,
                       builder: (_) {
-                        if (dashboardController.listStockProduct.isEmpty) {
+                        if (dashboardController.listNewProduct.isEmpty) {
                           return const Padding(
                             padding: EdgeInsets.all(8.0),
                             child: Text(

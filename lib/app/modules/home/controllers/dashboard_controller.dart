@@ -34,7 +34,7 @@ class DashboardController extends GetxController {
 
   List<ProductModel> listNewProduct = [];
   List<ProductModel> listSoldProduct = [];
-  List<ProductModel> listStockProduct = [];
+  List<ProductReportModel> listStockProduct = [];
 
   // Product Data
   void streamAllProductData() {
@@ -89,11 +89,7 @@ class DashboardController extends GetxController {
   }
 
   void streamStockProductData() {
-    FirestoreService.refProduct
-        .orderBy('allStock')
-        .limit(5)
-        .snapshots()
-        .listen((event) {
+    FirestoreService.refProduct.limit(5).snapshots().listen((event) async {
       listStockProduct.clear();
       if (event.docs.isEmpty) {
         return;
@@ -101,10 +97,16 @@ class DashboardController extends GetxController {
 
       // Set Product
       for (var doc in event.docs) {
-        final product = ProductModel(
+        final result = await FirestoreService.refSubCollectionProduct(
+          idDoc: doc.id,
+          collection: 'products',
+          subCollectionPath: 'stock',
+        ).orderBy('createdAt', descending: true).limit(1).get();
+
+        final product = ProductReportModel(
           productName: doc['productName'],
           price: doc['price'],
-          // allStock: doc['allStock'],
+          stock: result.docs[0]['stock'],
           idCategory: doc['idCategory'],
           sold: doc['sold'],
           createdAt: doc['createdAt'],
@@ -118,13 +120,14 @@ class DashboardController extends GetxController {
     });
   }
 
-  void streamSoldkProductData() {
+  void streamSoldProductData() {
     FirestoreService.refProduct
         .orderBy('sold', descending: true)
         .limit(5)
         .snapshots()
         .listen((event) {
       listSoldProduct.clear();
+
       if (event.docs.isEmpty) {
         return;
       }
@@ -144,6 +147,7 @@ class DashboardController extends GetxController {
         );
         listSoldProduct.add(product);
       }
+
       update();
     });
   }
@@ -215,7 +219,7 @@ class DashboardController extends GetxController {
     streamAllProductData();
     streamNewProductData();
     streamStockProductData();
-    streamSoldkProductData();
+    streamSoldProductData();
 
     // Stream Category
     streamAllCategoryData();
