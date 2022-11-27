@@ -22,8 +22,7 @@ class PdfService {
     dateHeader = date;
     final doc = pw.Document();
 
-    logo = await rootBundle
-        .loadString('assets/images/logo/KLABELS_Logo_Front_Color_16-9.svg');
+    logo = await rootBundle.loadString('assets/images/logo/logo.svg');
 
     var dataRegular = await rootBundle.load("assets/fonts/Poppins-Regular.ttf");
     var dataBold = await rootBundle.load("assets/fonts/Poppins-Bold.ttf");
@@ -103,6 +102,7 @@ class PdfService {
             ),
           ],
         ),
+        pw.SizedBox(height: 16),
         pw.Text(
           'Periode : $dateHeader',
           style: const pw.TextStyle(fontSize: 10),
