@@ -118,6 +118,7 @@ class PdfService {
     List<ProductReportModel> listReportProduct,
   ) {
     const tableHeaders = [
+      'Tanggal',
       'Nama Produk',
       'Harga',
       'Semua Stok',
@@ -136,6 +137,7 @@ class PdfService {
         0: pw.Alignment.centerLeft,
         1: pw.Alignment.center,
         2: pw.Alignment.center,
+        3: pw.Alignment.center,
       },
       headerStyle: pw.TextStyle(
         color: PdfColors.white,

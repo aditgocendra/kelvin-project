@@ -90,15 +90,18 @@ class ProductReportModel {
   String getIndex(int index) {
     switch (index) {
       case 0:
-        return productName;
+        return DateFormat('dd/mm/y', 'id').format(createdAt.toDate());
       case 1:
+        return productName;
+      case 2:
         return NumberFormat.currency(
           locale: 'id',
           symbol: 'Rp. ',
           decimalDigits: 0,
         ).format(price);
-      case 2:
+      case 3:
         return '$stock Unit';
+
       default:
         return '';
     }
