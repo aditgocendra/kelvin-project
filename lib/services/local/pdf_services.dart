@@ -12,7 +12,8 @@ class PdfService {
   // content true = product
   // content false = transaction
 
-  static String? logo;
+  static String? logoProduct;
+  static String? logoTransactionProduct;
   static String? dateHeader;
   static List<ProductReportModel>? listProduct;
 
@@ -22,7 +23,9 @@ class PdfService {
     dateHeader = date;
     final doc = pw.Document();
 
-    logo = await rootBundle.loadString('assets/images/logo/logo.svg');
+    logoProduct = await rootBundle.loadString('assets/images/logo/logo.svg');
+    logoTransactionProduct = await rootBundle
+        .loadString('assets/images/logo/KLABELS_Logo_Front_Color_16-9.svg');
 
     var dataRegular = await rootBundle.load("assets/fonts/Poppins-Regular.ttf");
     var dataBold = await rootBundle.load("assets/fonts/Poppins-Bold.ttf");
@@ -96,7 +99,7 @@ class PdfService {
             pw.Expanded(
               child: pw.Container(
                 child: pw.Center(
-                  child: pw.SvgImage(svg: logo!, width: 200),
+                  child: pw.SvgImage(svg: logoProduct!, width: 200),
                 ),
               ),
             ),
@@ -180,7 +183,7 @@ class PdfService {
             pw.Expanded(
               child: pw.Container(
                 child: pw.Center(
-                  child: pw.SvgImage(svg: logo!, width: 200),
+                  child: pw.SvgImage(svg: logoTransactionProduct!, width: 200),
                 ),
               ),
             ),
